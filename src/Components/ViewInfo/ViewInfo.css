@@ -1,0 +1,239 @@
+/* ===== VIEW INFO PAGE ===== */
+.vi-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: #f0f7ff;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.vi-body {
+    flex: 1;
+    padding: 40px 24px;
+}
+
+.vi-container {
+    max-width: 860px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* ---- Profile card ---- */
+.vi-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 4px 24px rgba(30,58,95,0.10);
+    overflow: hidden;
+    border: 1px solid #e8f0fe;
+}
+
+/* Avatar section */
+.vi-avatar-section {
+    background: linear-gradient(135deg, #1e3a5f 0%, #0ea5e9 100%);
+    padding: 36px 32px 28px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.vi-avatar-ring {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    padding: 3px;
+    background: rgba(255,255,255,0.3);
+    flex-shrink: 0;
+}
+
+.vi-avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid white;
+}
+
+.vi-name-block {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.vi-fullname {
+    font-size: 26px;
+    font-weight: 800;
+    color: white;
+    margin: 0;
+    line-height: 1.1;
+}
+
+.vi-role-badge {
+    display: inline-block;
+    padding: 4px 14px;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid rgba(255,255,255,0.3);
+    width: fit-content;
+}
+
+/* Info grid */
+.vi-info-grid {
+    padding: 28px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.vi-info-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid #f0f4ff;
+}
+
+.vi-info-item:last-child {
+    border-bottom: none;
+}
+
+.vi-info-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: #eff6ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: #1e3a5f;
+    flex-shrink: 0;
+}
+
+.vi-highlight .vi-info-icon {
+    background: linear-gradient(135deg, #0ea5e9, #1e3a5f);
+    color: white;
+}
+
+.vi-info-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.vi-info-label {
+    font-size: 12px;
+    color: #9ca3af;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.vi-info-value {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1e3a5f;
+}
+
+.vi-highlight .vi-info-value {
+    font-size: 18px;
+    font-weight: 800;
+    color: #0ea5e9;
+}
+
+/* Actions */
+.vi-actions {
+    padding: 0 32px 28px;
+    display: flex;
+    gap: 12px;
+}
+
+.vi-edit-btn,
+.vi-history-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 22px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.18s;
+    font-family: inherit;
+}
+
+.vi-edit-btn {
+    background: linear-gradient(135deg, #1e3a5f 0%, #0ea5e9 100%);
+    color: white;
+}
+
+.vi-edit-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.vi-history-btn {
+    background: #f0f7ff;
+    color: #1e3a5f;
+    border: 1.5px solid #bfdbfe;
+}
+
+.vi-history-btn:hover {
+    background: #dbeafe;
+    border-color: #93c5fd;
+}
+
+/* ---- Quick stats ---- */
+.vi-quick-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.vi-stat-card {
+    background: white;
+    border-radius: 16px;
+    border: 1.5px solid #e8f0fe;
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    transition: all 0.18s;
+    box-shadow: 0 2px 8px rgba(30,58,95,0.06);
+}
+
+.vi-stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(30,58,95,0.14);
+    border-color: #93c5fd;
+}
+
+.vi-stat-icon {
+    font-size: 28px;
+    color: #1e3a5f;
+}
+
+.vi-stat-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    text-align: center;
+}
+
+.vi-stat-orange .vi-stat-icon { color: #f97316; }
+.vi-stat-orange:hover { border-color: #fed7aa; }
+
+/* Responsive */
+@media (max-width: 640px) {
+    .vi-quick-stats { grid-template-columns: 1fr; }
+    .vi-avatar-section { flex-direction: column; text-align: center; padding: 28px 20px 20px; }
+    .vi-info-grid { padding: 20px; }
+    .vi-actions { flex-direction: column; padding: 0 20px 20px; }
+    .vi-edit-btn, .vi-history-btn { justify-content: center; }
+}

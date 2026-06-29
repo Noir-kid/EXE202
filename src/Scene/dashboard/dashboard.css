@@ -1,0 +1,198 @@
+/* ===== DASHBOARD STAT CARDS ===== */
+.sg-stat-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.sg-stat-row-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 1100px) {
+    .sg-stat-row   { grid-template-columns: repeat(2, 1fr); }
+    .sg-stat-row-3 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+    .sg-stat-row   { grid-template-columns: 1fr; }
+    .sg-stat-row-3 { grid-template-columns: 1fr; }
+}
+
+.sg-stat-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    transition: box-shadow 0.18s;
+}
+
+.sg-stat-card:hover {
+    box-shadow: 0 4px 14px rgba(0,0,0,0.10);
+}
+
+.sg-stat-card.dark {
+    background: #1F2A40;
+    border-color: rgba(255,255,255,0.06);
+    box-shadow: none;
+}
+
+.sg-stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.sg-stat-body { flex: 1; min-width: 0; }
+
+.sg-stat-value {
+    font-size: 22px;
+    font-weight: 800;
+    color: #111827;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sg-stat-card.dark .sg-stat-value { color: #e0e0e0; }
+
+.sg-stat-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+.sg-stat-sub {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 2px;
+}
+
+.sg-filter-apply-btn {
+    padding: 7px 20px;
+    border-radius: 8px;
+    border: none;
+    background: #16a34a;
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+    white-space: nowrap;
+}
+
+.sg-filter-apply-btn:hover {
+    background: #15803d;
+}
+
+:root {
+  --PrimaryColor: hsl(26, 93%, 50%);
+  --HoverColor: hsl(26, 90%, 42%);
+  --whiteColor: hsl(0, 0%, 100%);
+  --blackColor: hsl(0%, 0%, 18%);
+  --textColor: hsl(240, 1%, 48%);
+  --whiteColorDeam: hsl(0, 0%, 93%);
+  --greyBg: hsl(0, 0%, 96%);
+  --greyText: rgb(190, 190, 190);
+  --inputColor: hsl(330, 12%, 97%);
+  --blueColor: #3f51b5;
+  --orangeColor: #ff9800;
+  --greenColor: #4caf50;
+  --redColor: #f44336;
+  --blackColorBox: #000000;
+}
+
+.download-button {
+  font-size: 15px !important;
+  font-weight: bold !important;
+  display: flex;
+  padding: 10px 80px !important;
+  align-items: center !important;
+}
+
+.filter-container {
+  width: 100%;
+  border-radius: 1rem;
+  padding: 2rem;
+  background: var(--whiteColor);
+  display: flex;
+  justify-content: center;
+  box-shadow: 0 2px 8px 4px rgba(178, 178, 178, 0.45);
+  align-items: center;
+  gap: 1rem;
+}
+
+.filter-input {
+  flex: 1;
+  margin: 0 10px;
+  min-width: 150px;
+  padding: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+}
+
+.filter-input select, .filter-input input {
+  width: 100%;
+  border: none;
+  padding: 10px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.filter-input select:focus, .filter-input input:focus {
+  outline: none;
+}
+
+.filter-input select, .filter-input input {
+  height: 55.97px; /* Set a fixed height to match the select field */
+  box-sizing: border-box; /* Ensure padding and border are included in the element's total width and height */
+}
+
+/* Typography overrides */
+.css-1m7v2vn-MuiInputBase-root-MuiOutlinedInput-root-MuiSelect-root, 
+.css-17vbrv7-MuiInputBase-root-MuiOutlinedInput-root, 
+.css-16rlrpp-MuiInputBase-root-MuiOutlinedInput-root {
+  border-radius: 20px !important;
+}
+
+.css-17vbkzs-MuiFormControl-root-MuiTextField-root {
+  margin-top: 8px !important;
+}
+
+.css-1rfvgyr-MuiButtonBase-root-MuiButton-root {
+  margin-top: 1px !important;
+}
+
+/* Typography overrides */
+.css-1di55by-MuiTypography-root,
+.css-1wsdv8m-MuiTypography-root {
+  font-size: 32px !important;
+}
+
+.css-b1sixc-MuiTypography-root,
+.css-7zxgqb-MuiTypography-root,
+.css-18bglcv-MuiTypography-root,
+.css-12oq9v-MuiTypography-root,
+.css-q6y2iz-MuiTypography-root {
+  font-size: 16px !important;
+}
+
+.css-1gwnvns-MuiTypography-root,
+.css-4hb1nt-MuiTypography-root {
+  font-size: 20px !important;
+}
+

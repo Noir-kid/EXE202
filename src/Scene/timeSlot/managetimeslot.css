@@ -1,0 +1,306 @@
+/* managetimeslot-styles.css */
+
+.managetimeslot-custom-modal .ant-modal-body {
+  padding: 24px 24px 0;
+}
+
+.managetimeslot-custom-modal .ant-modal-footer {
+  border-top: 0;
+  padding: 10px 24px 24px;
+  text-align: center;
+}
+
+.managetimeslot-custom-modal .ant-modal-title {
+  text-align: center;
+  font-size: 20px;
+}
+
+.managetimeslot-custom-modal .ant-modal-content {
+  border-radius: 10px;
+}
+
+.managetimeslot-custom-modal .ant-modal-content input,
+.managetimeslot-custom-modal .ant-modal-content select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #d9d9d9;
+  border-radius: 5px;
+}
+
+.managetimeslot-custom-modal .ant-modal-content .managetimeslot-user-modal {
+  display: flex;
+  justify-content: space-between;
+}
+
+.managetimeslot-custom-modal .ant-modal-content .managetimeslot-user-modal-left,
+.managetimeslot-custom-modal .ant-modal-content .managetimeslot-user-modal-right {
+  width: 48%;
+}
+
+.managetimeslot-custom-modal .ant-modal-content .managetimeslot-user-modal-item {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.managetimeslot-custom-modal .ant-modal-content .managetimeslot-user-modal-item-text1,
+.managetimeslot-custom-modal .ant-modal-content .managetimeslot-user-modal-item-text2 {
+  flex: 40%;
+  font-weight: bold;
+}
+
+.managetimeslot-custom-modal .ant-modal-content .managetimeslot-user-modal-item-value,
+.managetimeslot-custom-modal .ant-modal-content .managetimeslot-user-modal-item-valu1 {
+  flex: 60%;
+}
+
+.managetimeslot-custom-modal .ant-modal-content .managetimeslot-input-box-modal {
+  width: calc(100% - 20px);
+}
+
+.managetimeslot-button-hover-black1 {
+  margin-right: 10px;
+}
+.managetimeslot-button-hover-black2 {
+  margin-right: 10px;
+}
+
+.managetimeslot-user-modal {
+  display: flex;
+  justify-content: space-between;
+}
+
+.managetimeslot-user-modal-left,
+.managetimeslot-user-modal-right {
+  width: 48%;
+}
+
+.managetimeslot-user-modal-item {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.managetimeslot-user-modal-item-text1,
+.managetimeslot-user-modal-item-text2 {
+  flex: 40%;
+  font-weight: bold;
+}
+
+.managetimeslot-user-modal-item-value,
+.managetimeslot-user-modal-item-valu1 {
+  flex: 60%;
+}
+
+.managetimeslot-input-box-modal {
+  width: calc(100% - 20px);
+}
+
+.managetimeslot-input-box-modal:disabled {
+  background-color: #f0f0f0;
+}
+
+.managetimeslot-action-button {
+  background-color: black;
+  color: white;
+  margin-left: 8px;
+}
+
+.managetimeslot-button-primary {
+  background-color: #1976d2;
+  color: white;
+}
+
+.managetimeslot-button-primary:hover {
+  background-color: #1565c0;
+}
+
+.managetimeslot-button-add-user {
+  margin-bottom: 20px;
+}
+.timeslotmanage-filter{
+  display: flex;
+}
+.timeslotmanage-filter-branch{
+  color: black;
+  font-size: 25px;
+  font-weight: 500;
+  font-family: 'Poppins', sans-serif;
+  margin-top: 15px;
+  margin-left: 20px;
+}
+.timeslotmanage-filter-branch-input-box-modal{
+  width: 20%;
+  margin-top: 15px;
+  height: 50%;
+  margin-left: 20px;
+  text-align: center;
+}
+.timeslotmanage-filter-court-input-box-modal{
+  width: 20%;
+  margin-top: 15px;
+  height: 50%;
+  margin-left: 20px;
+  text-align: center;
+}
+.timeslotmanage-filter-court{
+  color: black;
+  font-size: 25px;
+  font-weight: 500;
+  font-family: 'Poppins', sans-serif;
+  margin-top: 15px;
+  margin-left: 50px;
+}
+.timeslotmanage-filter-date{
+  color: black;
+  font-size: 25px;
+  font-weight: 500;
+  font-family: 'Poppins', sans-serif;
+  margin-top: 15px;
+  margin-left: 80px;
+}
+.timeslotmanage-filter-date-input{
+  width: 20%;
+  text-align: center;
+  border: solid 1px lightgray;
+  border-radius: 5px;
+  margin-left: 10px;
+  margin-top: 15px;
+}
+.timeslotbutton-flex{
+  width: auto;
+  height: 50px;
+  padding: 0px 10px;
+  margin-top: 10px;
+  margin-left: 50px;
+  color: #f0f0f0;
+  background-color: black;
+  border-radius: 10px;
+  border: none;
+}
+.managetimeslot-custom-modal {
+  border-radius: 10px;
+}
+
+.managetimeslot-timeslot-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+}
+
+.managetimeslot-user-info {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 40px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.managetimeslot-user-info-title {
+  font-size: 25px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: black;
+}
+
+.managetimeslot-user-info-image {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #ddd;
+}
+
+.managetimeslot-user-info-text {
+  font-size: 18px;
+  margin-bottom: 5px;
+  color: #333;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  margin-top: 5px;
+}
+
+.managetimeslot-user-info-details {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.managetimeslot-button-hover-black {
+  background-color: black;
+  color: white;
+  border-radius: 5px;
+  padding: 5px 10px;
+  transition: background-color 0.3s ease;
+  width: 20%;
+  margin-left: 80%;
+}
+
+.managetimeslot-button-hover-black:hover {
+  background-color: hsl(26, 93%, 50%);
+}
+
+
+.managetimeslot-button-hover-black-addslot {
+  background-color: black;
+  color: white;
+  border-radius: 5px;
+  padding: 5px 10px;
+  transition: background-color 0.3s ease;
+  width: 20%;
+  margin-right: 10px;
+}
+
+.managetimeslot-button-hover-black-addslot:hover {
+  background-color: hsl(26, 93%, 50%);
+}
+
+.managetimeslot-add-slot-label-time-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.time-input {
+  flex: 1;
+  margin-right: 10px;
+}
+
+.time-input:last-child {
+  margin-right: 0;
+}
+
+.managetimeslot-add-slot-input {
+  width: 100%;
+}
+
+.time-select {
+  text-align: center; /* Center the text in the dropdown */
+}
+.time-input-flexing {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px; /* Adjust the gap as needed */
+}
+
+.time-input-flexing .time-input {
+  flex: 1; /* Ensures each time input takes equal space */
+}
+.update-timeslot-flex{
+  display: flex;
+}
+.updatetimeslot-footer-flex {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0px; /* Adjust the gap for closer buttons */
+  margin-top: 20px; /* Add some margin to separate from the form */
+}
+
+.updatetimeslot-footer-flex button {
+  margin-left: 20px; /* Minimal space between buttons */
+  flex: none; /* Ensure buttons don't stretch */
+}
+

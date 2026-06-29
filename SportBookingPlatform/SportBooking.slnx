@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="SportBooking.API/SportBooking.API.csproj" />
+  <Project Path="SportBooking.Application/SportBooking.Application.csproj" />
+  <Project Path="SportBooking.Domain/SportBooking.Domain.csproj" />
+  <Project Path="SportBooking.Infrastructure/SportBooking.Infrastructure.csproj" />
+</Solution>

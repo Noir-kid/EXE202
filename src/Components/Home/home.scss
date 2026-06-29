@@ -1,0 +1,190 @@
+:root {
+    --PrimaryColor: hsl(26, 93%, 50%);
+    --HoverColor: hsl(26, 90%, 42%);
+    --whiteColor: hsl(0, 0%, 100%);
+    --blackColor: hsl(0%, 0%, 18%);
+    --textColor: hsl(240, 1%, 48%);
+    --whiteColorDeam: hsl(0, 0%, 93%);
+    --greyBg: hsl(0, 0%, 96%);
+    --greyText: rgb(190, 190, 190);
+    --inputColor: hsl(330, 12%, 97%);
+}
+
+.home {
+    height: 80vh !important;
+    background: linear-gradient(rgba(33, 33, 33, 0.522), rgba(33, 33, 33, 0.522)), url('../../Assets/image2.jpg') !important;
+    background-position: center !important;
+    background-size: cover !important;
+    background-repeat: no-repeat !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: auto !important;
+    position: relative !important;
+
+    .secContainer {
+        .homeText {
+            text-align: center !important;
+
+            .title {
+                color: var(--whiteColor) !important;
+                font-size: 2rem !important;
+                font-weight: 700 !important;
+                line-height: 2.5rem !important;
+            }
+
+            .subTitle {
+                color: var(--whiteColor) !important;
+                opacity: .9 !important;
+                font-size: 17px !important;
+                font-weight: 300 !important;
+                padding: 1rem 0 !important;
+                max-width: 70% !important;
+                text-align: center !important;
+                margin: auto !important;
+            }
+
+            .btn {
+                padding: .6rem 1.5rem !important;
+                font-size: 20px !important;
+            }
+        }
+
+        .homeCard {
+            width: 60% !important;
+            border-radius: 1rem !important;
+            padding: 2rem !important;
+            background: var(--whiteColor) !important;
+            position: absolute !important;
+            gap: 1rem !important;
+            justify-content: center !important;
+            bottom: -20% !important;
+            transform: translate(-50%) !important;
+            left: 50% !important;
+            box-shadow: 0 2px 8px 4px rgba(178, 178, 178, 0.45) !important;
+            display: flex !important;
+            align-items: center !important;
+
+            .locationDiv,
+            .distDiv {
+                width: 45% !important;
+                margin: 0 1% !important;
+
+                label {
+                    display: block !important;
+                    color: var(--textColor) !important;
+                    font-weight: 500 !important;
+                    font-size: 17px !important;
+                    padding-bottom: .4rem !important;
+                }
+
+                select, input {
+                    width: 100% !important;
+                    background: var(--inputColor) !important;
+                    border-radius: 10px !important;
+                    border: none !important;
+                    padding: 10px !important;
+                    font-size: 13px !important;
+                    font-weight: 500 !important;
+
+                    &::placeholder {
+                        font-size: 13px !important;
+                        opacity: .5 !important;
+                        font-weight: 400 !important;
+                    }
+                    &:focus {
+                        outline: none !important;
+                    }
+                }
+            }
+
+            .btn {
+                width: auto !important;
+                padding: .6rem 1.5rem !important;
+                color: var(--whiteColor) !important;
+                font-weight: 600 !important;
+                margin-top: -2px !important;
+                align-self: center !important;
+            }
+        }
+    }
+}
+
+// MEDIA QUERIES ======================>
+
+@media screen and (min-width: 480px) {
+    .home {
+        .secContainer {
+            .homeCard {
+                bottom: -100px !important;
+                width: 80% !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                .btn {
+                    transform: translateY(15px) !important;
+                }
+            }
+        }
+    }
+}
+
+@media screen and (min-width: 556px) {
+    .home {
+        .secContainer {
+            .homeText {
+                .title {
+                    font-size: 2.5rem !important;
+                }
+                .subTitle {
+                    font-size: 18px !important;
+                }
+            }
+        }
+    }
+}
+
+@media screen and (min-width: 720px) {
+    .home {
+        .secContainer {
+            .homeCard {
+                bottom: -10% !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+        }
+    }
+}
+
+@media screen and (min-width: 720px) {
+    .home {
+        .secContainer {
+            .homeText {
+                padding: 1rem 10rem !important;
+
+                .title {
+                    font-size: 3.4rem !important;
+                    margin: auto !important;
+                    line-height: 4rem !important;
+                }
+
+                .subTitle {
+                    width: 70% !important;
+                }
+            }
+        }
+    }
+}
+
+@media screen and (min-width: 1024px) {
+    .home {
+        .secContainer {
+            .homeText {
+                .subTitle {
+                    font-size: 20px !important;
+                }
+            }
+
+            .homeCard {
+                width: 50% !important;
+            }
+        }
+    }
+}

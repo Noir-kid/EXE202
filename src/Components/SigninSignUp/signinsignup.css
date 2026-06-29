@@ -1,0 +1,109 @@
+.sg-auth-page {
+    display: flex;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* LEFT PANEL */
+.sg-auth-panel-left {
+    flex: 0 0 44%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+}
+
+.sg-auth-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    padding: 48px 40px;
+    transition: background 0.3s;
+}
+
+.sg-auth-panel-content {
+    color: white;
+    max-width: 360px;
+}
+
+.sg-auth-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 48px;
+    font-size: 18px;
+    font-weight: 700;
+    color: white;
+}
+
+.sg-panel-title {
+    font-size: 34px;
+    font-weight: 800;
+    line-height: 1.2;
+    margin: 0 0 16px;
+    color: white;
+}
+
+.sg-panel-desc {
+    font-size: 15px;
+    line-height: 1.65;
+    opacity: 0.9;
+    margin: 0 0 32px;
+    color: white;
+}
+
+.sg-panel-features {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.sg-panel-features li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    color: white;
+}
+
+.sg-feature-check {
+    font-size: 20px;
+    flex-shrink: 0;
+    opacity: 0.9;
+}
+
+/* RIGHT PANEL */
+.sg-auth-panel-right {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 48px;
+    background: #ffffff;
+    overflow-y: auto;
+}
+
+@media (max-width: 900px) {
+    .sg-auth-panel-left {
+        flex: 0 0 38%;
+    }
+    .sg-auth-panel-right {
+        padding: 40px 32px;
+    }
+}
+
+@media (max-width: 680px) {
+    .sg-auth-page {
+        flex-direction: column;
+    }
+    .sg-auth-panel-left {
+        flex: 0 0 180px;
+    }
+    .sg-auth-panel-right {
+        padding: 32px 20px;
+    }
+}

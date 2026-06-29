@@ -1,0 +1,110 @@
+/* ===== SPORTSG FOOTER ===== */
+.sg-footer {
+    background: #0f2340;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.sg-footer-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 64px 28px 44px;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1.3fr;
+    gap: 48px;
+}
+
+/* Brand */
+.sg-footer-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 20px;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 16px;
+    text-decoration: none;
+}
+
+.sg-footer-tagline {
+    font-size: 14px;
+    color: rgba(255,255,255,0.55);
+    line-height: 1.7;
+    max-width: 240px;
+    margin: 0;
+}
+
+/* Columns */
+.sg-footer-heading {
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 1.2px;
+    margin: 0 0 20px;
+    text-transform: uppercase;
+}
+
+.sg-footer-col ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+}
+
+.sg-footer-col ul li a,
+.sg-footer-col ul li span {
+    font-size: 14px;
+    color: rgba(255,255,255,0.6);
+    text-decoration: none;
+    transition: color 0.15s;
+    line-height: 1;
+}
+
+.sg-footer-col ul li a:hover {
+    color: #f97316;
+}
+
+/* Contact column */
+.sg-footer-contact li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14px;
+    color: rgba(255,255,255,0.6);
+}
+
+.sg-footer-contact li svg {
+    font-size: 17px;
+    flex-shrink: 0;
+    color: #0ea5e9;
+    margin-top: 1px;
+}
+
+/* Bottom bar */
+.sg-footer-bottom {
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding: 20px 28px;
+    text-align: center;
+}
+
+.sg-footer-bottom p {
+    font-size: 13px;
+    color: rgba(255,255,255,0.3);
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 960px) {
+    .sg-footer-inner {
+        grid-template-columns: 1fr 1fr;
+        gap: 36px;
+    }
+}
+
+@media (max-width: 560px) {
+    .sg-footer-inner {
+        grid-template-columns: 1fr;
+        padding: 44px 24px 32px;
+    }
+}

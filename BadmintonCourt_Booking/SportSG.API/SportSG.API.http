@@ -1,0 +1,270 @@
+### SportSG API — Luồng JWT Auth + Test Endpoints
+### Base URL: http://localhost:62117
+###
+### HƯỚNG DẪN SỬ DỤNG (VS Code REST Client / JetBrains HTTP Client):
+###   1. Chạy POST /api/auth/login bên dưới
+###   2. Copy giá trị `accessToken` từ response
+###   3. Dán vào biến @token ở phần "BIẾN TOÀN CỤC"
+###   4. Chạy các request authenticated phía sau
+###
+### LUỒNG TOKEN:
+###   [User] --email+password--> POST /api/auth/login
+###   [Server] --validates--> trả về { accessToken, refreshToken }
+###   [Frontend] --lưu token (memory/secure cookie)
+###   [Request tiếp theo] --Authorization: Bearer {token}--> API
+###   [Token hết hạn (8h)] --refreshToken--> POST /api/auth/refresh --> accessToken mới
+###   [Logout] --> POST /api/auth/logout (token bị revoke)
+
+@baseUrl = http://localhost:62117
+
+### ================================================================
+### BIẾN TOÀN CỤC — paste accessToken sau khi login vào đây
+### ================================================================
+@token = PASTE_ACCESS_TOKEN_HERE
+@refreshToken = PASTE_REFRESH_TOKEN_HERE
+
+### ================================================================
+### 1. ĐĂNG NHẬP (không cần token)
+###    Server xác thực → trả JWT Access Token (8h) + Refresh Token (30d)
+### ================================================================
+
+### 1a. Login — SuperAdmin
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "superadmin@sportsg.com",
+  "password": "password"
+}
+
+###
+### Response mẫu:
+### {
+###   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+###   "refreshToken": "abc123randomstring...",
+###   "expiresIn": 28800,
+###   "user": {
+###     "userId": "20000000-0000-0000-0000-000000000001",
+###     "email": "superadmin@sportsg.com",
+###     "fullName": "Super Admin",
+###     "role": "SuperAdmin"
+###   }
+### }
+
+### 1b. Login — Partner (Chủ sân BMTC Hà Nội)
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "owner.hn@bmtc.vn",
+  "password": "password"
+}
+
+### 1c. Login — Branch Manager (Cầu Giấy)
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "manager.caugiay@bmtc.vn",
+  "password": "password"
+}
+
+### 1d. Login — Staff
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "staff1.caugiay@bmtc.vn",
+  "password": "password"
+}
+
+### 1e. Login — Customer
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "an.nguyen@gmail.com",
+  "password": "password"
+}
+
+### 1f. Login — sai mật khẩu (expect 401)
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "an.nguyen@gmail.com",
+  "password": "wrongpassword"
+}
+
+### ================================================================
+### 2. ĐĂNG KÝ TÀI KHOẢN MỚI (không cần token)
+### ================================================================
+
+### 2a. Đăng ký Customer mới
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "newuser@gmail.com",
+  "password": "password",
+  "firstName": "Tân",
+  "lastName": "Người Dùng",
+  "phone": "0999888777"
+}
+
+### ================================================================
+### 3. REQUEST CÓ AUTHENTICATION
+###    *** Dán accessToken từ bước 1 vào @token bên trên trước khi chạy ***
+###
+###    Frontend gửi token trong header:
+###    Authorization: Bearer {accessToken}
+### ================================================================
+
+### 3a. Lấy profile người dùng hiện tại [Authorize]
+GET {{baseUrl}}/api/users/me
+Authorization: Bearer {{token}}
+
+### 3b. Lấy danh sách tất cả Users [Authorize(Roles = "SuperAdmin")]
+GET {{baseUrl}}/api/users
+Authorization: Bearer {{token}}
+
+### 3c. Lấy danh sách Branches (public — không cần token)
+GET {{baseUrl}}/api/branches
+
+### 3d. Lấy danh sách Branches theo Partner [Authorize]
+GET {{baseUrl}}/api/branches?partnerId=10000000-0000-0000-0000-000000000002
+Authorization: Bearer {{token}}
+
+### 3e. Lấy danh sách Courts (public)
+GET {{baseUrl}}/api/courts
+
+### 3f. Lấy chi tiết một Court (public)
+GET {{baseUrl}}/api/courts/40000000-0000-0000-0000-000000000001
+
+### 3g. Lấy danh sách Bookings của mình [Authorize]
+GET {{baseUrl}}/api/bookings/my
+Authorization: Bearer {{token}}
+
+### 3h. Tạo Booking mới [Authorize]
+POST {{baseUrl}}/api/bookings
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "courtId": "40000000-0000-0000-0000-000000000001",
+  "bookingDate": "2026-07-10",
+  "startTime": "08:00",
+  "endTime": "10:00",
+  "note": "Nhóm 4 người",
+  "promotionCode": ""
+}
+
+### 3i. Lấy dashboard thống kê [Authorize(Roles = "SuperAdmin,PartnerAdmin")]
+GET {{baseUrl}}/api/dashboard/stats
+Authorization: Bearer {{token}}
+
+### 3j. Lấy danh sách Partners [Authorize(Roles = "SuperAdmin")]
+GET {{baseUrl}}/api/partners
+Authorization: Bearer {{token}}
+
+### 3k. Lấy danh sách Reviews của Court
+GET {{baseUrl}}/api/courts/40000000-0000-0000-0000-000000000001/reviews
+
+### 3l. Lấy danh sách Promotions đang active (public)
+GET {{baseUrl}}/api/promotions?active=true
+
+### ================================================================
+### 4. ĐỔI MẬT KHẨU [Authorize]
+### ================================================================
+
+### 4a. Đổi mật khẩu (cần token hợp lệ)
+POST {{baseUrl}}/api/auth/change-password
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "currentPassword": "password",
+  "newPassword": "newpassword123"
+}
+
+### ================================================================
+### 5. QUÊN MẬT KHẨU (không cần token — email flow)
+### ================================================================
+
+### 5a. Gửi email reset (server gửi link reset về email)
+POST {{baseUrl}}/api/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "an.nguyen@gmail.com"
+}
+
+### 5b. Đặt lại mật khẩu bằng token từ email
+POST {{baseUrl}}/api/auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "TOKEN_FROM_EMAIL",
+  "newPassword": "newpassword123"
+}
+
+### ================================================================
+### 6. REFRESH TOKEN — lấy accessToken mới khi hết hạn (8h)
+###    Frontend tự động gọi khi nhận 401 từ API
+###    Dán refreshToken từ bước 1 vào @refreshToken bên trên
+### ================================================================
+
+### 6a. Đổi refreshToken → accessToken mới
+POST {{baseUrl}}/api/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+###
+### Response mẫu:
+### {
+###   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... (mới)",
+###   "refreshToken": "newRefreshToken... (xoay vòng)",
+###   "expiresIn": 28800
+### }
+
+### ================================================================
+### 7. ĐĂNG XUẤT [Authorize]
+###    Server revoke refreshToken, client xóa token khỏi storage
+### ================================================================
+
+### 7a. Logout
+POST {{baseUrl}}/api/auth/logout
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+###
+### Response: 204 No Content
+### Sau khi logout:
+###   - refreshToken bị vô hiệu hóa trên server
+###   - accessToken vẫn còn hiệu lực đến khi hết hạn (8h) — stateless JWT
+###   - Frontend phải tự xóa token khỏi memory/cookie
+
+### ================================================================
+### 8. GOOGLE OAuth (mobile / web app)
+### ================================================================
+
+### 8a. Đăng nhập / đăng ký bằng Google ID Token
+POST {{baseUrl}}/api/auth/google
+Content-Type: application/json
+
+{
+  "idToken": "GOOGLE_ID_TOKEN_FROM_FRONTEND"
+}
+
+### ================================================================
+### 9. SWAGGER — kiểm tra toàn bộ API
+###    Mở trình duyệt → http://localhost:62117/swagger
+###    Click "Authorize" → nhập:  Bearer <accessToken>
+### ================================================================
