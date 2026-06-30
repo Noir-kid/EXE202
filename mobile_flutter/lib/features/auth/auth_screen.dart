@@ -12,22 +12,20 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _username = TextEditingController();
+  final _email = TextEditingController();
   final _password = TextEditingController();
   final _firstName = TextEditingController();
   final _lastName = TextEditingController();
-  final _email = TextEditingController();
   final _phone = TextEditingController();
   bool _registerMode = false;
   bool _loading = false;
 
   @override
   void dispose() {
-    _username.dispose();
+    _email.dispose();
     _password.dispose();
     _firstName.dispose();
     _lastName.dispose();
-    _email.dispose();
     _phone.dispose();
     super.dispose();
   }
@@ -39,7 +37,6 @@ class _AuthScreenState extends State<AuthScreen> {
     try {
       if (_registerMode) {
         await session.register(
-          username: _username.text.trim(),
           password: _password.text,
           firstName: _firstName.text.trim(),
           lastName: _lastName.text.trim(),
@@ -54,7 +51,7 @@ class _AuthScreenState extends State<AuthScreen> {
         );
         setState(() => _registerMode = false);
       } else {
-        await session.login(_username.text.trim(), _password.text);
+        await session.login(_email.text.trim(), _password.text);
       }
     } catch (error) {
       if (!mounted) return;
@@ -152,16 +149,6 @@ class _AuthScreenState extends State<AuthScreen> {
                           ),
                           const SizedBox(height: 12),
                           TextFormField(
-                            controller: _email,
-                            keyboardType: TextInputType.emailAddress,
-                            decoration: const InputDecoration(
-                              labelText: 'Email',
-                              prefixIcon: Icon(Icons.mail_outline),
-                            ),
-                            validator: _required,
-                          ),
-                          const SizedBox(height: 12),
-                          TextFormField(
                             controller: _phone,
                             keyboardType: TextInputType.phone,
                             decoration: const InputDecoration(
@@ -173,10 +160,11 @@ class _AuthScreenState extends State<AuthScreen> {
                           const SizedBox(height: 12),
                         ],
                         TextFormField(
-                          controller: _username,
+                          controller: _email,
+                          keyboardType: TextInputType.emailAddress,
                           decoration: const InputDecoration(
-                            labelText: 'Username',
-                            prefixIcon: Icon(Icons.person_outline),
+                            labelText: 'Email',
+                            prefixIcon: Icon(Icons.mail_outline),
                           ),
                           validator: _required,
                         ),

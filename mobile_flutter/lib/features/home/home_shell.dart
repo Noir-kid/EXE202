@@ -5,7 +5,6 @@ import '../../core/network/customer_api.dart';
 import '../../core/session/session_controller.dart';
 import '../../shared/widgets/formatters.dart';
 import '../booking/booking_screen.dart';
-import '../courts/branches_screen.dart';
 import '../history/history_screen.dart';
 import '../profile/profile_screen.dart';
 
@@ -106,13 +105,12 @@ class _HomeDashboard extends StatelessWidget {
     final name = session.claims?.username ?? 'Player';
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
       children: [
-        _Greeting(name: name),
-        const SizedBox(height: 20),
-        _BalanceCard(
+        _HeroPanel(
+          name: name,
           balanceText: formatMoney(user?.balance ?? 0),
-          onTopUp: onProfileTap,
+          onBookTap: onBookTap,
         ),
         const SizedBox(height: 20),
         _QuickActions(
@@ -149,7 +147,10 @@ class _HomeDashboard extends StatelessWidget {
             if (snapshot.hasError) {
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 20),
-                child: Text('Failed to load branches: ${snapshot.error}'),
+                child: Text(
+                  'Khong tai duoc danh sach chi nhanh. Hay thu lai sau.',
+                  style: const TextStyle(color: Color(0xFF6B7280)),
+                ),
               );
             }
             final branches = snapshot.data ?? const [];
@@ -161,7 +162,7 @@ class _HomeDashboard extends StatelessWidget {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: branches.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 12),
+                separatorBuilder: (_, _) => const SizedBox(width: 12),
                 itemBuilder: (context, index) {
                   final branch = branches[index];
                   return _BranchCard(
@@ -179,96 +180,130 @@ class _HomeDashboard extends StatelessWidget {
   }
 }
 
-class _Greeting extends StatelessWidget {
-  const _Greeting({required this.name});
+class _HeroPanel extends StatelessWidget {
+  const _HeroPanel({
+    required this.name,
+    required this.balanceText,
+    required this.onBookTap,
+  });
 
   final String name;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Hello, $name!',
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.w800,
-              ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          'Ready for your next session?',
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: const Color(0xFF4B5563),
-              ),
-        ),
-      ],
-    );
-  }
-}
-
-class _BalanceCard extends StatelessWidget {
-  const _BalanceCard({required this.balanceText, required this.onTopUp});
-
   final String balanceText;
-  final VoidCallback onTopUp;
+  final VoidCallback onBookTap;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF003527), Color(0xFF064E3B)],
+          colors: [Color(0xFF003527), Color(0xFF086052), Color(0xFF0D9488)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(28),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x1A000000),
-            blurRadius: 20,
-            offset: Offset(0, 8),
+            color: Color(0x24003527),
+            blurRadius: 28,
+            offset: Offset(0, 14),
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Active balance',
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.8),
-                          letterSpacing: 1.5,
+      padding: const EdgeInsets.all(22),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Hello, $name',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                          ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Ready for your next match?',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.white.withValues(alpha: 0.76),
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.16),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white24),
+                ),
+                child: const Icon(Icons.sports_tennis, color: Colors.white),
+              ),
+            ],
+          ),
+          const SizedBox(height: 22),
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white24),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.account_balance_wallet_outlined,
+                  color: Color(0xFF86F2E4),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Active balance',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.7),
                           fontWeight: FontWeight.w700,
+                          fontSize: 12,
                         ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    balanceText,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        balanceText,
+                        style: const TextStyle(
                           color: Colors.white,
-                          fontWeight: FontWeight.w800,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
                         ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                FilledButton.icon(
+                  onPressed: onBookTap,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: const Color(0xFF003527),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  ),
+                  icon: const Icon(Icons.add, size: 18),
+                  label: const Text('Book'),
+                ),
+              ],
             ),
-            FilledButton(
-              onPressed: onTopUp,
-              style: FilledButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: const Color(0xFF003527),
-              ),
-              child: const Text('Top-up'),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -335,18 +370,19 @@ class _QuickActionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(18),
       child: InkWell(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(18),
         onTap: onTap,
         child: Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: const Color(0xFFE5E7EB)),
             boxShadow: const [
               BoxShadow(
-                color: Color(0x0A000000),
-                blurRadius: 20,
-                offset: Offset(0, 4),
+                color: Color(0x08000000),
+                blurRadius: 18,
+                offset: Offset(0, 8),
               ),
             ],
           ),
@@ -355,7 +391,7 @@ class _QuickActionCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               CircleAvatar(
-                radius: 24,
+                radius: 23,
                 backgroundColor: const Color(0xFFE8F5F1),
                 child: Icon(icon, color: const Color(0xFF003527)),
               ),

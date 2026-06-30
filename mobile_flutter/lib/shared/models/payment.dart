@@ -23,9 +23,9 @@ class PaymentRecord {
       userId: _read(json, 'userId'),
       bookingId: _read(json, 'bookingId'),
       amount: double.tryParse(_read(json, 'amount', fallback: '0')) ?? 0,
-      method: int.tryParse(_read(json, 'method', fallback: '0')) ?? 0,
-      transactionId: _read(json, 'transactionId'),
-      date: DateTime.tryParse(_read(json, 'date')),
+      method: _readPaymentMethod(json),
+      transactionId: _readAny(json, ['transactionRef', 'transactionId']),
+      date: DateTime.tryParse(_readAny(json, ['paidAt', 'createdAt', 'date'])),
     );
   }
 }
@@ -33,4 +33,29 @@ class PaymentRecord {
 String _read(Map<String, dynamic> json, String key, {String fallback = ''}) {
   final pascal = key[0].toUpperCase() + key.substring(1);
   return (json[key] ?? json[pascal] ?? fallback).toString();
+}
+
+String _readAny(
+  Map<String, dynamic> json,
+  List<String> keys, {
+  String fallback = '',
+}) {
+  for (final key in keys) {
+    final value = _read(json, key);
+    if (value.isNotEmpty) return value;
+  }
+  return fallback;
+}
+
+int _readPaymentMethod(Map<String, dynamic> json) {
+  final raw = _read(json, 'method', fallback: '0');
+  final number = int.tryParse(raw);
+  if (number != null) return number;
+  return switch (raw.toLowerCase()) {
+    'momo' => 2,
+    'vnpay' => 1,
+    'cash' => 3,
+    'wallet' => 4,
+    _ => 0,
+  };
 }

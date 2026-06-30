@@ -17,13 +17,16 @@ class UserAccount {
 
   factory UserAccount.fromJson(Map<String, dynamic> json) {
     return UserAccount(
-      id: _read(json, 'userId'),
-      username: _read(json, 'userName'),
-      roleId: _read(json, 'roleId'),
+      id: _readAny(json, ['userId', 'id']),
+      username: _readAny(json, ['userName', 'username', 'fullName', 'email']),
+      roleId: _readAny(json, ['roleId', 'role', 'roleCode']),
       branchId: _read(json, 'branchId'),
       balance: double.tryParse(_read(json, 'balance', fallback: '0')) ?? 0,
-      activeStatus:
-          _read(json, 'activeStatus', fallback: 'false').toLowerCase() ==
+      activeStatus: _readAny(
+            json,
+            ['activeStatus', 'isActive'],
+            fallback: 'false',
+          ).toLowerCase() ==
           'true',
     );
   }
@@ -50,12 +53,12 @@ class UserDetail {
 
   factory UserDetail.fromJson(Map<String, dynamic> json) {
     return UserDetail(
-      userId: _read(json, 'userId'),
+      userId: _readAny(json, ['userId', 'id']),
       firstName: _read(json, 'firstName'),
       lastName: _read(json, 'lastName'),
       email: _read(json, 'email'),
       phone: _read(json, 'phone'),
-      image: _read(json, 'img'),
+      image: _readAny(json, ['avatarUrl', 'imageUrl', 'img']),
     );
   }
 }
@@ -63,4 +66,16 @@ class UserDetail {
 String _read(Map<String, dynamic> json, String key, {String fallback = ''}) {
   final pascal = key[0].toUpperCase() + key.substring(1);
   return (json[key] ?? json[pascal] ?? fallback).toString();
+}
+
+String _readAny(
+  Map<String, dynamic> json,
+  List<String> keys, {
+  String fallback = '',
+}) {
+  for (final key in keys) {
+    final value = _read(json, key);
+    if (value.isNotEmpty) return value;
+  }
+  return fallback;
 }

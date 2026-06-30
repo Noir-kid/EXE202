@@ -15,32 +15,31 @@ class CustomerApi {
   final ApiClient _client;
 
   Future<List<Branch>> getBranches() async {
-    final response = await _client.dio.get<List<dynamic>>('/Branch/GetAll');
-    return (response.data ?? [])
+    final response = await _client.dio.get<dynamic>('/api/branches');
+    return _listFromResponse(response.data)
         .whereType<Map>()
         .map((item) => Branch.fromJson(Map<String, dynamic>.from(item)))
         .toList();
   }
 
   Future<List<Court>> getCourtsByBranch(String branchId) async {
-    final response = await _client.dio.get<List<dynamic>>(
-      '/Court/GetByBranch',
-      queryParameters: {'id': branchId},
+    final response = await _client.dio.get<dynamic>(
+      '/api/courts',
+      queryParameters: {'branchId': branchId},
     );
-    return (response.data ?? [])
+    return _listFromResponse(response.data)
         .whereType<Map>()
         .map((item) => Court.fromJson(Map<String, dynamic>.from(item)))
         .toList();
   }
 
-  Future<List<BookedSlot>> getSlotsByCourt(String courtId) async {
+  Future<List<BookedSlot>> getSlotsByCourt(String courtId, DateTime date) async {
     final response = await _client.dio.get<List<dynamic>>(
-      '/Slot/GetByDemand',
-      queryParameters: {'courtId': courtId},
+      '/api/bookings/availability',
+      queryParameters: {'courtId': courtId, 'date': _dateOnly(date)},
     );
     return (response.data ?? [])
-        .whereType<Map>()
-        .map((item) => BookedSlot.fromJson(Map<String, dynamic>.from(item)))
+        .map((item) => _slotFromAvailability(item, courtId, date))
         .toList();
   }
 
@@ -51,36 +50,36 @@ class CustomerApi {
     required int start,
     required int end,
   }) async {
-    // Chuyển sang dùng 'data' để gửi Body JSON
     await _client.dio.post(
-      '/Slot/BookingByBalance',
+      '/api/bookings',
       data: {
-        'date': _dateOnly(date),
-        'start': start,
-        'end': end,
         'courtId': courtId,
-        'userId': userId,
+        'bookingDate': _dateOnly(date),
+        'startTime': _hourOnly(start),
+        'endTime': _hourOnly(end),
+        'note': null,
+        'promoCode': null,
       },
     );
   }
 
   Future<List<Booking>> getBookings(String userId) async {
-    final response = await _client.dio.get<List<dynamic>>(
-      '/Booking/GetByUser',
-      queryParameters: {'id': userId},
+    final response = await _client.dio.get<dynamic>(
+      '/api/bookings',
+      queryParameters: {'page': 1, 'pageSize': 100},
     );
-    return (response.data ?? [])
+    return _listFromResponse(response.data)
         .whereType<Map>()
         .map((item) => Booking.fromJson(Map<String, dynamic>.from(item)))
         .toList();
   }
 
   Future<List<PaymentRecord>> getPayments(String userId) async {
-    final response = await _client.dio.get<List<dynamic>>(
-      '/Payment/GetByUser',
-      queryParameters: {'id': userId},
+    final response = await _client.dio.get<dynamic>(
+      '/api/payments',
+      queryParameters: {'page': 1, 'pageSize': 100},
     );
-    return (response.data ?? [])
+    return _listFromResponse(response.data)
         .whereType<Map>()
         .map((item) => PaymentRecord.fromJson(Map<String, dynamic>.from(item)))
         .toList();
@@ -88,21 +87,21 @@ class CustomerApi {
 
   Future<UserDetail?> getUserDetail(String userId) async {
     final response = await _client.dio.get<Map<String, dynamic>>(
-      '/UserDetail/GetById',
-      queryParameters: {'id': userId},
+      '/api/users/me',
     );
     final data = response.data;
     return data == null ? null : UserDetail.fromJson(data);
   }
 
   Future<List<FeedbackItem>> getFeedbacksByBranch(String branchId) async {
-    final response = await _client.dio.get<List<dynamic>>(
-      '/Feedback/GetByBranch',
-      queryParameters: {'id': branchId},
-    );
-    return (response.data ?? [])
+    final courts = await getCourtsByBranch(branchId);
+    final courtIds = courts.map((court) => court.id).toSet();
+    final response = await _client.dio.get<dynamic>('/api/reviews');
+    return _listFromResponse(response.data)
         .whereType<Map>()
-        .map((item) => FeedbackItem.fromJson(Map<String, dynamic>.from(item)))
+        .map((item) => Map<String, dynamic>.from(item))
+        .where((item) => courtIds.contains((item['courtId'] ?? item['CourtId']).toString()))
+        .map(FeedbackItem.fromJson)
         .toList();
   }
 
@@ -112,15 +111,8 @@ class CustomerApi {
     required int rating,
     required String content,
   }) async {
-    // Chuyển sang dùng 'data'
-    await _client.dio.post(
-      '/Feedback/Post',
-      data: {
-        'rate': rating,
-        'content': content,
-        'branchId': branchId,
-        'userId': userId,
-      },
+    throw UnsupportedError(
+      'Backend moi yeu cau BookingId de tao review. Hay gui feedback tu mot booking da hoan tat.',
     );
   }
 
@@ -129,21 +121,9 @@ class CustomerApi {
     required int amount,
     required int method,
   }) async {
-    // Chuyển sang dùng 'data'
-    final response = await _client.dio.post<Map<String, dynamic>>(
-      '/Booking/TransactionProcess',
-      data: {
-        'Method': method,
-        'UserId': userId,
-        'Type': 'buyTime',
-        'Amount': amount,
-      },
+    throw UnsupportedError(
+      'Backend moi khong con endpoint nap balance. Thanh toan hien duoc tao tu booking qua /api/payments/initiate.',
     );
-    final raw = response.data?['url']?.toString();
-    if (raw == null || raw.isEmpty) {
-      throw Exception('Payment URL is empty');
-    }
-    return Uri.parse(raw);
   }
 
   Future<void> openPaymentUrl(Uri url) async {
@@ -155,5 +135,31 @@ class CustomerApi {
     final month = date.month.toString().padLeft(2, '0');
     final day = date.day.toString().padLeft(2, '0');
     return '${date.year}-$month-$day';
+  }
+
+  String _hourOnly(int hour) => '${hour.toString().padLeft(2, '0')}:00:00';
+
+  List<dynamic> _listFromResponse(dynamic data) {
+    if (data is List) return data;
+    if (data is Map) {
+      for (final key in ['items', 'Items', 'data', 'Data', 'results', 'Results']) {
+        final value = data[key];
+        if (value is List) return value;
+      }
+    }
+    return const [];
+  }
+
+  BookedSlot _slotFromAvailability(dynamic value, String courtId, DateTime date) {
+    final raw = value.toString();
+    final hour = int.tryParse(raw.split(':').first) ?? 0;
+    return BookedSlot(
+      id: '$courtId-${_dateOnly(date)}-$hour',
+      bookingId: 'available',
+      courtId: courtId,
+      date: DateTime(date.year, date.month, date.day),
+      start: hour,
+      end: hour + 1,
+    );
   }
 }

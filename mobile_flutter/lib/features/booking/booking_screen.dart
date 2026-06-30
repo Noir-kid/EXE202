@@ -67,7 +67,7 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   Future<void> _loadSlots(Court court) async {
-    final slots = await widget.api.getSlotsByCourt(court.id);
+    final slots = await widget.api.getSlotsByCourt(court.id, _date);
     setState(() => _slots = slots);
   }
 
@@ -78,7 +78,11 @@ class _BookingScreenState extends State<BookingScreen> {
       lastDate: DateTime.now().add(const Duration(days: 120)),
       initialDate: _date,
     );
-    if (picked != null) setState(() => _date = picked);
+    if (picked != null) {
+      setState(() => _date = picked);
+      final court = _court;
+      if (court != null) await _loadSlots(court);
+    }
   }
 
   Future<void> _submit() async {
@@ -124,7 +128,7 @@ class _BookingScreenState extends State<BookingScreen> {
     }).toList();
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
       children: [
         _BalanceCard(),
         const SizedBox(height: 20),
@@ -235,23 +239,12 @@ class _BookingScreenState extends State<BookingScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 16),
-        FilledButton.icon(
-          onPressed: _submitting || _court == null ? null : _submit,
-          icon: _submitting
-              ? const SizedBox.square(
-                  dimension: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Icon(Icons.check),
-          label: const Text('Book by balance'),
-        ),
         const SizedBox(height: 24),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Booked slots on this day',
+              'Available slots on this day',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w800,
                   ),
@@ -264,14 +257,36 @@ class _BookingScreenState extends State<BookingScreen> {
         ),
         const SizedBox(height: 12),
         if (sameDaySlots.isEmpty)
-          const _EmptyState(text: 'No booked slot for selected court/date.')
+          const _EmptyState(text: 'No available slot for selected court/date.')
         else
-          ...sameDaySlots.map(
-            (slot) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: _SlotCard(slot: slot),
-            ),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: sameDaySlots.map(
+              (slot) {
+                final selected = slot.start == _start && slot.end == _end;
+                return _SlotChip(
+                  slot: slot,
+                  selected: selected,
+                  onTap: () {
+                    setState(() {
+                      _start = slot.start;
+                      _end = slot.end;
+                    });
+                  },
+                );
+              },
+            ).toList(),
           ),
+        const SizedBox(height: 24),
+        _BookingSummary(
+          court: _court,
+          date: _date,
+          start: _start,
+          end: _end,
+          submitting: _submitting,
+          onSubmit: _court == null ? null : _submit,
+        ),
       ],
     );
   }
@@ -284,11 +299,18 @@ class _BalanceCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF003527), Color(0xFF064E3B)],
+          colors: [Color(0xFF003527), Color(0xFF0D9488)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(26),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x1F003527),
+            blurRadius: 24,
+            offset: Offset(0, 12),
+          ),
+        ],
       ),
       padding: const EdgeInsets.all(20),
       child: Row(
@@ -359,9 +381,21 @@ class _FieldCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x08000000),
+            blurRadius: 18,
+            offset: Offset(0, 8),
+          ),
+        ],
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         child: child,
       ),
     );
@@ -388,36 +422,135 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
-class _SlotCard extends StatelessWidget {
-  const _SlotCard({required this.slot});
+class _SlotChip extends StatelessWidget {
+  const _SlotChip({
+    required this.slot,
+    required this.selected,
+    required this.onTap,
+  });
 
   final BookedSlot slot;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: selected ? const Color(0xFF003527) : Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Container(
+          width: 104,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: selected ? const Color(0xFF003527) : const Color(0xFFD1D5DB),
+            ),
+          ),
+          child: Column(
+            children: [
+              Icon(
+                Icons.schedule,
+                size: 18,
+                color: selected ? Colors.white : const Color(0xFF0D9488),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                '${slot.start}:00',
+                style: TextStyle(
+                  color: selected ? Colors.white : const Color(0xFF111827),
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              Text(
+                '${slot.end}:00',
+                style: TextStyle(
+                  color: selected
+                      ? Colors.white.withValues(alpha: 0.72)
+                      : const Color(0xFF6B7280),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BookingSummary extends StatelessWidget {
+  const _BookingSummary({
+    required this.court,
+    required this.date,
+    required this.start,
+    required this.end,
+    required this.submitting,
+    required this.onSubmit,
+  });
+
+  final Court? court;
+  final DateTime date;
+  final int start;
+  final int end;
+  final bool submitting;
+  final VoidCallback? onSubmit;
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(color: const Color(0xFFE5E7EB)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A000000),
-            blurRadius: 20,
-            offset: Offset(0, 4),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              const CircleAvatar(
+                backgroundColor: Color(0xFFE8F5F1),
+                child: Icon(Icons.sports_tennis, color: Color(0xFF003527)),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      court?.name ?? 'Select a court',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.w900),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      '${formatDate(date)}  |  $start:00 - $end:00',
+                      style: const TextStyle(color: Color(0xFF6B7280)),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          FilledButton.icon(
+            onPressed: submitting ? null : onSubmit,
+            icon: submitting
+                ? const SizedBox.square(
+                    dimension: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.check),
+            label: const Text('Confirm booking'),
           ),
         ],
-      ),
-      child: ListTile(
-        leading: const CircleAvatar(
-          backgroundColor: Color(0xFFE8F5F1),
-          child: Icon(Icons.schedule, color: Color(0xFF003527)),
-        ),
-        title: Text(
-          '${slot.start}:00 - ${slot.end}:00',
-          style: const TextStyle(fontWeight: FontWeight.w700),
-        ),
-        subtitle: Text('Booking ${slot.bookingId}'),
       ),
     );
   }
