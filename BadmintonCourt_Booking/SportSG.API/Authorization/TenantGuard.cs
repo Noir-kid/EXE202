@@ -60,7 +60,11 @@ public static class TenantGuard
 
         if (role == Roles.PartnerAdmin)
         {
-            if (branch.PartnerId != ctx.GetPartnerId())
+            var jwtPartnerId = ctx.GetPartnerId();
+            if (!jwtPartnerId.HasValue)
+                throw new BusinessException(
+                    "Phiên đăng nhập chưa có thông tin Partner. Vui lòng đăng xuất và đăng nhập lại.");
+            if (branch.PartnerId != jwtPartnerId.Value)
                 throw new ForbiddenException("Chi nhánh này không thuộc partner của bạn.");
             return branch;
         }
@@ -89,7 +93,11 @@ public static class TenantGuard
 
         if (role == Roles.PartnerAdmin)
         {
-            if (branch.PartnerId != ctx.GetPartnerId())
+            var jwtPartnerId = ctx.GetPartnerId();
+            if (!jwtPartnerId.HasValue)
+                throw new BusinessException(
+                    "Phiên đăng nhập chưa có thông tin Partner. Vui lòng đăng xuất và đăng nhập lại.");
+            if (branch.PartnerId != jwtPartnerId.Value)
                 throw new ForbiddenException("Chi nhánh này không thuộc partner của bạn.");
             return branch;
         }
@@ -126,7 +134,11 @@ public static class TenantGuard
 
         if (role == Roles.PartnerAdmin)
         {
-            if (court.Branch.PartnerId != ctx.GetPartnerId())
+            var jwtPartnerId = ctx.GetPartnerId();
+            if (!jwtPartnerId.HasValue)
+                throw new BusinessException(
+                    "Phiên đăng nhập chưa có thông tin Partner. Vui lòng đăng xuất và đăng nhập lại.");
+            if (court.Branch.PartnerId != jwtPartnerId.Value)
                 throw new ForbiddenException("Sân này không thuộc partner của bạn.");
             return court;
         }
@@ -144,19 +156,28 @@ public static class TenantGuard
     // ── Branch ownership check (for court creation) ───────────────────────
 
     /// <summary>
-    /// Verifies that a Branch belongs to the caller's partner before creating a court inside it.
+    /// Verifies that a Branch exists and belongs to the caller's partner before creating a court inside it.
     /// SuperAdmin can use any branch. PartnerAdmin's branch must match their partner.
     /// </summary>
     public static async Task RequireBranchOwnershipAsync(
         HttpContext ctx, Guid branchId, IUnitOfWork uow, CancellationToken ct = default)
     {
-        var role = ctx.GetRole();
-        if (role == Roles.SuperAdmin) return;
-
+        // Always validate branch exists — even for SuperAdmin, to return 404 instead of a FK constraint error.
         var branch = await uow.Branches.GetByIdAsync(branchId, ct)
             ?? throw new NotFoundException($"Chi nhánh {branchId} không tồn tại.");
 
-        if (role == Roles.PartnerAdmin && branch.PartnerId != ctx.GetPartnerId())
-            throw new ForbiddenException("Branch này không thuộc partner của bạn.");
+        var role = ctx.GetRole();
+        if (role == Roles.SuperAdmin) return;
+
+        if (role == Roles.PartnerAdmin)
+        {
+            var jwtPartnerId = ctx.GetPartnerId();
+            if (!jwtPartnerId.HasValue)
+                throw new BusinessException(
+                    "Phiên đăng nhập chưa có thông tin Partner. Vui lòng đăng xuất và đăng nhập lại.");
+
+            if (branch.PartnerId != jwtPartnerId.Value)
+                throw new ForbiddenException("Branch này không thuộc partner của bạn.");
+        }
     }
 }
