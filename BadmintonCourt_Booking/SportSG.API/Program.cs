@@ -198,17 +198,6 @@ try
     // ── CORS ──────────────────────────────────────────────────────
     builder.Services.AddCors(opt =>
         opt.AddPolicy("Frontend", p =>
-<<<<<<< HEAD
-            p.WithOrigins(
-                "http://localhost:3000",
-                "https://localhost:3000",
-                "https://sportsg.online",
-                "https://www.sportsg.online",
-                "https://yourdomain.com")
-             .AllowAnyMethod()
-             .AllowAnyHeader()
-             .AllowCredentials()));
-=======
         {
             if (builder.Environment.IsDevelopment())
             {
@@ -229,7 +218,6 @@ try
                  .AllowCredentials();
             }
         }));
->>>>>>> main
 
     // ── Controllers ───────────────────────────────────────────────
     builder.Services.AddControllers()
