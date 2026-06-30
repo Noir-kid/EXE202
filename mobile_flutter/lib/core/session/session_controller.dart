@@ -46,24 +46,25 @@ class SessionController extends ChangeNotifier {
       data: {'email': email, 'password': password},
     );
     final data = response.data ?? const {};
-    final token = (data['accessToken'] ?? data['AccessToken'] ?? data['token'])
-        ?.toString();
-    if (token == null || token.isEmpty) {
-      throw Exception('Login response does not contain access token');
+    final accessToken =
+        (data['accessToken'] ?? data['AccessToken'] ?? data['token'])
+            ?.toString();
+    if (accessToken == null || accessToken.isEmpty) {
+      throw Exception('Login response does not contain accessToken');
     }
-    final parsed = JwtClaims.fromToken(token);
+    final parsed = JwtClaims.fromToken(accessToken);
     if (parsed == null || parsed.userId.isEmpty) {
       throw Exception('Invalid token');
     }
-    _token = token;
+    _token = accessToken;
     _claims = parsed;
-    await tokenStorage.saveToken(token);
     final rawUser = data['user'] ?? data['User'];
     if (rawUser is Map) {
       _user = UserAccount.fromJson(Map<String, dynamic>.from(rawUser));
     } else {
       await refreshUser();
     }
+    await tokenStorage.saveToken(accessToken);
     notifyListeners();
   }
 

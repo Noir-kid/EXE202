@@ -112,7 +112,7 @@ class CustomerApi {
     required String content,
   }) async {
     throw UnsupportedError(
-      'Backend moi yeu cau BookingId de tao review. Hay gui feedback tu mot booking da hoan tat.',
+      'Backend mới yêu cầu BookingId để tạo review. Hãy gửi feedback từ một booking đã hoàn tất.',
     );
   }
 
@@ -122,7 +122,7 @@ class CustomerApi {
     required int method,
   }) async {
     throw UnsupportedError(
-      'Backend moi khong con endpoint nap balance. Thanh toan hien duoc tao tu booking qua /api/payments/initiate.',
+      'Backend mới không còn endpoint nạp balance. Thanh toán hiện được tạo từ booking qua /api/payments/initiate.',
     );
   }
 

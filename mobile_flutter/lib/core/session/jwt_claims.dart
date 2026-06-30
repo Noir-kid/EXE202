@@ -24,29 +24,31 @@ class JwtClaims {
     final json = jsonDecode(payload) as Map<String, dynamic>;
     final exp = json['exp'];
     return JwtClaims(
-      userId: _claim(
+      userId: _readClaim(
         json,
         [
           'userId',
           'UserId',
-          'sub',
           'nameid',
+          'sub',
           'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier',
         ],
       ),
-      username: _claim(
+      username: _readClaim(
         json,
         [
+          'username',
+          'Username',
           'fullName',
           'FullName',
           'email',
           'Email',
-          'Username',
           'name',
+          'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress',
           'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name',
         ],
       ),
-      role: _claim(
+      role: _readClaim(
         json,
         [
           'role',
@@ -61,7 +63,7 @@ class JwtClaims {
   }
 }
 
-String _claim(Map<String, dynamic> json, List<String> keys) {
+String _readClaim(Map<String, dynamic> json, List<String> keys) {
   for (final key in keys) {
     final value = json[key];
     if (value != null && value.toString().isNotEmpty) return value.toString();
