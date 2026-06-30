@@ -1,0 +1,55 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sportsg-sqlserver
+    environment:
+      ACCEPT_EULA: ${MSSQL_ACCEPT_EULA:-Y}
+      MSSQL_PID: ${MSSQL_PID:-Developer}
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?set MSSQL_SA_PASSWORD in your local .env file}
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+
+  redis:
+    image: redis:7-alpine
+    container_name: sportsg-redis
+    ports:
+      - "6379:6379"
+
+  backend:
+    build:
+      context: ./BadmintonCourt_Booking
+      dockerfile: SportSG.API/Dockerfile
+    container_name: sportsg-backend
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ASPNETCORE_URLS: ${ASPNETCORE_URLS:-http://+:8080}
+      DisableHttpsRedirection: ${DISABLE_HTTPS_REDIRECTION:-true}
+      ConnectionStrings__Default: ${CONNECTIONSTRINGS__DEFAULT:?set CONNECTIONSTRINGS__DEFAULT in your local .env file}
+      ConnectionStrings__Redis: ${CONNECTIONSTRINGS__REDIS:-redis:6379}
+      Jwt__Key: ${JWT__KEY:?set JWT__KEY in your local .env file}
+      Jwt__Issuer: ${JWT__ISSUER:-SportSG}
+      Jwt__Audience: ${JWT__AUDIENCE:-SportSG-Clients}
+    ports:
+      - "8081:8080"
+    depends_on:
+      - sqlserver
+      - redis
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_API_BASE_URL: ${REACT_APP_API_BASE_URL:-/api}
+    container_name: sportsg-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  sqlserver-data:

@@ -1,0 +1,11 @@
+{
+  "ConnectionStrings": {
+    "Default": "Server=localhost;uid=sa;pwd=ChangeMe123!;database=SportSGDb;TrustServerCertificate=True;",
+    "Redis": ""
+  },
+  "Jwt": {
+    "Key": "change-this-to-a-long-random-secret",
+    "Issuer": "SportSG",
+    "Audience": "SportSG-Clients"
+  }
+}

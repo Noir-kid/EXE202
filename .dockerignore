@@ -1,0 +1,16 @@
+node_modules
+build
+coverage
+.git
+.gitignore
+.vscode
+BadmintonCourt_Booking
+SportBookingPlatform
+mobile_flutter
+server
+API
+BadmintonCourt_Booking/**/bin
+BadmintonCourt_Booking/**/obj
+mobile_flutter/**/build
+mobile_flutter/**/.dart_tool
+server/node_modules
