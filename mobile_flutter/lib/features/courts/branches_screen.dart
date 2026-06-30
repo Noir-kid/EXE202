@@ -40,7 +40,7 @@ class _BranchesScreenState extends State<BranchesScreen> {
         return RefreshIndicator(
           onRefresh: () async => _reload(),
           child: ListView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
             itemCount: branches.length,
             itemBuilder: (context, index) {
               final branch = branches[index];
@@ -48,13 +48,19 @@ class _BranchesScreenState extends State<BranchesScreen> {
                 title: branch.name,
                 subtitle: '${branch.location}\n${branch.phone}',
                 leading: CircleAvatar(
-                  child: Text(branch.name.isEmpty ? '?' : branch.name[0]),
+                  backgroundColor: const Color(0xFFE8F5F1),
+                  child: Text(
+                    branch.name.isEmpty ? '?' : branch.name[0],
+                    style: const TextStyle(
+                      color: Color(0xFF003527),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (_) =>
-                        BranchDetailScreen(api: widget.api, branch: branch),
+                    builder: (_) => BranchDetailScreen(api: widget.api, branch: branch),
                   ),
                 ),
               );
@@ -81,9 +87,7 @@ class BranchDetailScreen extends StatefulWidget {
 }
 
 class _BranchDetailScreenState extends State<BranchDetailScreen> {
-  late Future<List<Court>> _future = widget.api.getCourtsByBranch(
-    widget.branch.id,
-  );
+  late Future<List<Court>> _future = widget.api.getCourtsByBranch(widget.branch.id);
 
   void _reload() {
     setState(() => _future = widget.api.getCourtsByBranch(widget.branch.id));
@@ -100,59 +104,81 @@ class _BranchDetailScreenState extends State<BranchDetailScreen> {
             return const LoadingView(message: 'Loading courts...');
           }
           if (snapshot.hasError) {
-            return ErrorStateView(
-              message: '${snapshot.error}',
-              onRetry: _reload,
-            );
+            return ErrorStateView(message: '${snapshot.error}', onRetry: _reload);
           }
           final courts = snapshot.data ?? [];
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
             children: [
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.branch.location,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(widget.branch.phone),
-                      const SizedBox(height: 12),
-                      OutlinedButton.icon(
-                        onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => FeedbackScreen(
-                              api: widget.api,
-                              branch: widget.branch,
-                            ),
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: const Color(0xFFE5E7EB)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.branch.location,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(widget.branch.phone),
+                    const SizedBox(height: 12),
+                    OutlinedButton.icon(
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => FeedbackScreen(
+                            api: widget.api,
+                            branch: widget.branch,
                           ),
                         ),
-                        icon: const Icon(Icons.rate_review_outlined),
-                        label: const Text('Feedback'),
                       ),
-                    ],
-                  ),
+                      icon: const Icon(Icons.rate_review_outlined),
+                      label: const Text('Feedback'),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 12),
-              Text('Courts', style: Theme.of(context).textTheme.titleLarge),
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
+              Text(
+                'Courts',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+              ),
+              const SizedBox(height: 10),
               if (courts.isEmpty)
                 const Text('No court in this branch.')
               else
                 ...courts.map(
-                  (court) => InfoCard(
-                    title: court.name,
-                    subtitle:
-                        '${formatMoney(court.price)} / hour\n${court.description}',
-                    leading: Icon(
-                      court.isActive
-                          ? Icons.check_circle_outline
-                          : Icons.pause_circle_outline,
+                  (court) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: const Color(0xFFE5E7EB)),
+                      ),
+                      child: ListTile(
+                        title: Text(
+                          court.name,
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        subtitle: Text(
+                          '${formatMoney(court.price)} / hour\n${court.description}',
+                        ),
+                        leading: Icon(
+                          court.isActive
+                              ? Icons.check_circle_outline
+                              : Icons.pause_circle_outline,
+                          color: court.isActive
+                              ? const Color(0xFF003527)
+                              : const Color(0xFFF97316),
+                        ),
+                      ),
                     ),
                   ),
                 ),

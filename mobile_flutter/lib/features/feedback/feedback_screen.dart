@@ -51,15 +51,13 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
       _content.clear();
       _reload();
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Feedback submitted.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Feedback submitted.')),
+      );
     } catch (error) {
       if (!mounted) return;
       final message = session.apiClient.messageFromError(error);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
     } finally {
       if (mounted) setState(() => _posting = false);
     }
@@ -70,63 +68,79 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     return Scaffold(
       appBar: AppBar(title: Text('Feedback - ${widget.branch.name}')),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
         children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    'Write feedback',
-                    style: Theme.of(context).textTheme.titleMedium,
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: const Color(0xFFE5E7EB)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'Write feedback',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                ),
+                const SizedBox(height: 12),
+                SegmentedButton<int>(
+                  segments: const [
+                    ButtonSegment(value: 1, label: Text('1')),
+                    ButtonSegment(value: 2, label: Text('2')),
+                    ButtonSegment(value: 3, label: Text('3')),
+                    ButtonSegment(value: 4, label: Text('4')),
+                    ButtonSegment(value: 5, label: Text('5')),
+                  ],
+                  selected: {_rating},
+                  onSelectionChanged: (value) {
+                    setState(() => _rating = value.first);
+                  },
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _content,
+                  minLines: 3,
+                  maxLines: 5,
+                  decoration: const InputDecoration(
+                    labelText: 'Content',
+                    alignLabelWithHint: true,
                   ),
-                  const SizedBox(height: 12),
-                  SegmentedButton<int>(
-                    segments: const [
-                      ButtonSegment(value: 1, label: Text('1')),
-                      ButtonSegment(value: 2, label: Text('2')),
-                      ButtonSegment(value: 3, label: Text('3')),
-                      ButtonSegment(value: 4, label: Text('4')),
-                      ButtonSegment(value: 5, label: Text('5')),
-                    ],
-                    selected: {_rating},
-                    onSelectionChanged: (value) {
-                      setState(() => _rating = value.first);
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _content,
-                    minLines: 3,
-                    maxLines: 5,
-                    decoration: const InputDecoration(
-                      labelText: 'Content',
-                      alignLabelWithHint: true,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  FilledButton.icon(
-                    onPressed: _posting ? null : _post,
-                    icon: _posting
-                        ? const SizedBox.square(
-                            dimension: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.send),
-                    label: const Text('Submit'),
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 12),
+                FilledButton.icon(
+                  onPressed: _posting ? null : _post,
+                  icon: _posting
+                      ? const SizedBox.square(
+                          dimension: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.send),
+                  label: const Text('Submit'),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 16),
-          Text(
-            'Recent feedback',
-            style: Theme.of(context).textTheme.titleLarge,
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Recent feedback',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+              ),
+              Text(
+                widget.branch.name,
+                style: const TextStyle(color: Color(0xFF6B7280)),
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           FutureBuilder<List<FeedbackItem>>(
             future: _future,
             builder: (context, snapshot) {
@@ -147,11 +161,31 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               return Column(
                 children: items
                     .map(
-                      (item) => Card(
-                        child: ListTile(
-                          leading: CircleAvatar(child: Text('${item.rating}')),
-                          title: Text(item.content),
-                          subtitle: Text(formatDateTime(item.period)),
+                      (item) => Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: const Color(0xFFE5E7EB)),
+                          ),
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: const Color(0xFFE8F5F1),
+                              child: Text(
+                                '${item.rating}',
+                                style: const TextStyle(
+                                  color: Color(0xFF003527),
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                            title: Text(
+                              item.content,
+                              style: const TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                            subtitle: Text(formatDateTime(item.period)),
+                          ),
                         ),
                       ),
                     )
