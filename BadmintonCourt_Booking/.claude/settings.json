@@ -5,7 +5,8 @@
       "Bash(xargs grep -l \"GoogleLoginRequest\")",
       "Bash(xargs grep -l \"IGoogleAuthProvider\\\\|ValidateIdTokenAsync\")",
       "Bash(xargs grep -l \"GoogleAuthProvider\\\\|IGoogleAuth\\\\|ValidateIdToken\")",
-      "Bash(xargs grep -l \"Google\\\\|IdToken\\\\|firebase\")"
+      "Bash(xargs grep -l \"Google\\\\|IdToken\\\\|firebase\")",
+      "PowerShell(cd \"d:\\\\EXE\\\\BadmintonCourt_Booking\" ; dotnet build SportSG.API --no-restore 2>&1 | Where-Object { $_ -match \"error CS\\\\d\" })"
     ],
     "additionalDirectories": [
       "d:\\EXE\\src\\Scene\\court",
@@ -13,7 +14,8 @@
       "d:\\EXE\\src\\Scene\\ownerStaff",
       "d:\\EXE\\src",
       "d:\\EXE\\src\\Components\\Login",
-      "d:\\EXE\\src\\Components\\Register"
+      "d:\\EXE\\src\\Components\\Register",
+      "d:\\EXE\\src\\Components\\Popular"
     ]
   }
 }

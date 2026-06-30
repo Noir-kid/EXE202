@@ -1,24 +1,113 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-*{
-  margin: 0;
-  padding: 0;
+/* ── Design System Variables ─────────────────────────────────────── */
+:root {
+  /* Backgrounds */
+  --bg-primary:   #0a0f1e;
+  --bg-secondary: #0f172a;
+  --bg-card:      #1e293b;
+  --bg-card-2:    #263347;
+  --bg-hover:     rgba(59,130,246,0.06);
+
+  /* Accent */
+  --accent-blue:    #3b82f6;
+  --accent-violet:  #8b5cf6;
+  --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  --accent-glow:    0 0 20px rgba(59,130,246,0.25);
+
+  /* Text */
+  --text-primary:   #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted:     #475569;
+
+  /* Border */
+  --border:         rgba(148,163,184,0.1);
+  --border-accent:  rgba(59,130,246,0.3);
+
+  /* Status */
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error:   #ef4444;
+  --info:    #60a5fa;
+
+  /* Shadows */
+  --shadow-sm:  0 2px 8px rgba(0,0,0,0.3);
+  --shadow-md:  0 4px 20px rgba(0,0,0,0.4);
+  --shadow-lg:  0 8px 40px rgba(0,0,0,0.5);
+  --shadow-glow: 0 4px 24px rgba(59,130,246,0.2);
+
+  /* Radius */
+  --radius-sm:  6px;
+  --radius-md:  10px;
+  --radius-lg:  14px;
+  --radius-xl:  20px;
+
+  /* Sidebar */
+  --sidebar-w:  240px;
+  --sidebar-collapsed: 68px;
+  --topbar-h:   60px;
+
+  /* Transitions */
+  --transition: 0.2s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ── Reset ───────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  margin: 0; padding: 0;
   box-sizing: border-box;
 }
+
+html { scroll-behavior: smooth; }
+
 body {
-  margin: 0;
-  font-family: "Roboto", sans-serif;
+  font-family: 'Inter', 'Roboto', sans-serif;
   font-weight: 400;
-  font-style: normal;
+  background: var(--bg-primary);
+  color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   min-height: 100vh;
+  line-height: 1.6;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+/* ── Scrollbar ───────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.2); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(59,130,246,0.4); }
+
+/* ── Utilities ───────────────────────────────────────────────────── */
+.sg-gradient-text {
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
+
+.sg-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+
+.sg-btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--accent-gradient);
+  color: #fff; border: none;
+  padding: 10px 20px; border-radius: var(--radius-md);
+  font-weight: 600; font-size: 14px;
+  cursor: pointer; transition: var(--transition);
+}
+.sg-btn-primary:hover { opacity: 0.88; box-shadow: var(--shadow-glow); }
+
+.sg-badge {
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.03em;
+}
+.sg-badge-success { background: rgba(16,185,129,0.15); color: #10b981; }
+.sg-badge-warning { background: rgba(245,158,11,0.15); color: #f59e0b; }
+.sg-badge-error   { background: rgba(239,68,68,0.15);  color: #ef4444; }
+.sg-badge-info    { background: rgba(59,130,246,0.15);  color: #60a5fa; }
+.sg-badge-default { background: rgba(148,163,184,0.12); color: #94a3b8; }

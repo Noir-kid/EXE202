@@ -1,0 +1,86 @@
+2026-06-30 22:41:57.665 +07:00 [WRN] Entity 'User' has a global query filter defined and is the required end of a relationship with the entity 'Notification'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-06-30 22:41:57.689 +07:00 [WRN] Entity 'Payment' has a global query filter defined and is the required end of a relationship with the entity 'PaymentTransaction'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-06-30 22:41:57.772 +07:00 [INF] No migrations were found in assembly 'SportBooking.Infrastructure'. A migration needs to be added before the database can be updated.
+2026-06-30 22:41:58.404 +07:00 [INF] Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.
+2026-06-30 22:41:58.483 +07:00 [INF] No migrations were applied. The database is already up to date.
+2026-06-30 22:41:58.690 +07:00 [INF] Start installing Hangfire SQL objects...
+2026-06-30 22:41:58.843 +07:00 [INF] Hangfire SQL objects installed.
+2026-06-30 22:41:59.070 +07:00 [INF] User profile is available. Using 'C:\Users\admin\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-06-30 22:41:59.180 +07:00 [INF] Now listening on: https://localhost:52537
+2026-06-30 22:41:59.181 +07:00 [INF] Now listening on: http://localhost:52538
+2026-06-30 22:41:59.213 +07:00 [INF] Starting Hangfire Server using job storage: 'SQL Server: localhost@SportBookingDb'
+2026-06-30 22:41:59.214 +07:00 [INF] Using the following options for SQL Server job storage: Queue poll interval: 00:00:00.
+2026-06-30 22:41:59.215 +07:00 [INF] Using the following options for Hangfire Server:
+    Worker count: 20
+    Listening queues: 'default'
+    Shutdown timeout: 00:00:15
+    Schedule polling interval: 00:00:15
+2026-06-30 22:41:59.222 +07:00 [DBG] Execution loop BackgroundServerProcess:95696a1f has started in 3.434 ms
+2026-06-30 22:41:59.226 +07:00 [INF] Application started. Press Ctrl+C to shut down.
+2026-06-30 22:41:59.227 +07:00 [INF] Hosting environment: Development
+2026-06-30 22:41:59.228 +07:00 [INF] Content root path: D:\EXE\SportBookingPlatform\SportBooking.API
+2026-06-30 22:41:59.235 +07:00 [INF] Server noir:39536:db3823f3 successfully announced in 7.7152 ms
+2026-06-30 22:41:59.239 +07:00 [DBG] Execution loop ServerHeartbeatProcess:548f39c8 has started in 2.4722 ms
+2026-06-30 22:41:59.239 +07:00 [INF] Server noir:39536:db3823f3 is starting the registered dispatchers: ServerWatchdog, ServerJobCancellationWatcher, SqlServerHeartbeatProcess, ExpirationManager, CountersAggregator, Worker, DelayedJobScheduler, RecurringJobScheduler...
+2026-06-30 22:41:59.242 +07:00 [DBG] Execution loop ServerWatchdog:d5f5bb42 has started in 1.9586 ms
+2026-06-30 22:41:59.244 +07:00 [DBG] Execution loop ServerJobCancellationWatcher:e86c7ab5 has started in 3.2736 ms
+2026-06-30 22:41:59.245 +07:00 [DBG] Execution loop SqlServerHeartbeatProcess:a5d68648 has started in 3.1384 ms
+2026-06-30 22:41:59.247 +07:00 [DBG] Execution loop ExpirationManager:d6251064 has started in 3.1118 ms
+2026-06-30 22:41:59.316 +07:00 [DBG] Execution loop Worker:6d913830 has started in 69.3991 ms
+2026-06-30 22:41:59.248 +07:00 [DBG] Execution loop CountersAggregator:3fd5f7e0 has started in 3.1573 ms
+2026-06-30 22:41:59.250 +07:00 [DBG] Execution loop Worker:c76aceef has started in 3.7039 ms
+2026-06-30 22:41:59.382 +07:00 [INF] Server noir:39536:db3823f3 all the dispatchers started
+2026-06-30 22:41:59.384 +07:00 [DBG] Removing outdated records from the 'AggregatedCounter' table...
+2026-06-30 22:41:59.252 +07:00 [DBG] Execution loop Worker:afdcd1a2 has started in 5.1381 ms
+2026-06-30 22:41:59.253 +07:00 [DBG] Execution loop Worker:82addfd7 has started in 6.7006 ms
+2026-06-30 22:41:59.282 +07:00 [DBG] Execution loop Worker:1d7bc952 has started in 35.1602 ms
+2026-06-30 22:41:59.384 +07:00 [DBG] Aggregating records in 'Counter' table...
+2026-06-30 22:41:59.281 +07:00 [DBG] Execution loop Worker:3aca3331 has started in 34.879 ms
+2026-06-30 22:41:59.282 +07:00 [DBG] Execution loop Worker:3556aa6f has started in 35.1612 ms
+2026-06-30 22:41:59.284 +07:00 [DBG] Execution loop Worker:be588500 has started in 37.0347 ms
+2026-06-30 22:41:59.285 +07:00 [DBG] Execution loop Worker:43d81c87 has started in 38.6298 ms
+2026-06-30 22:41:59.314 +07:00 [DBG] Execution loop Worker:f0d34b79 has started in 67.2138 ms
+2026-06-30 22:41:59.314 +07:00 [DBG] Execution loop Worker:3d3fad7c has started in 67.4171 ms
+2026-06-30 22:41:59.314 +07:00 [DBG] Execution loop Worker:517db5a2 has started in 67.0673 ms
+2026-06-30 22:41:59.344 +07:00 [DBG] Execution loop Worker:3ab500ea has started in 97.9669 ms
+2026-06-30 22:41:59.344 +07:00 [DBG] Execution loop Worker:b93afcce has started in 97.967 ms
+2026-06-30 22:41:59.346 +07:00 [DBG] Execution loop Worker:a4ca40c9 has started in 99.8267 ms
+2026-06-30 22:41:59.393 +07:00 [DBG] Removing outdated records from the 'Job' table...
+2026-06-30 22:41:59.375 +07:00 [DBG] Execution loop Worker:8f9e8141 has started in 128.8208 ms
+2026-06-30 22:41:59.375 +07:00 [DBG] Execution loop Worker:19409062 has started in 128.9493 ms
+2026-06-30 22:41:59.377 +07:00 [DBG] Execution loop Worker:a719a96f has started in 130.7805 ms
+2026-06-30 22:41:59.379 +07:00 [DBG] Execution loop Worker:8089feba has started in 132.4046 ms
+2026-06-30 22:41:59.381 +07:00 [DBG] Execution loop Worker:91666d67 has started in 134.15 ms
+2026-06-30 22:41:59.382 +07:00 [DBG] Execution loop DelayedJobScheduler:3bd82970 has started in 3.4365 ms
+2026-06-30 22:41:59.384 +07:00 [DBG] Execution loop RecurringJobScheduler:576d20af has started in 3.465 ms
+2026-06-30 22:41:59.405 +07:00 [DBG] Removing outdated records from the 'List' table...
+2026-06-30 22:41:59.440 +07:00 [DBG] Removing outdated records from the 'Set' table...
+2026-06-30 22:41:59.444 +07:00 [DBG] Removing outdated records from the 'Hash' table...
+2026-06-30 22:41:59.562 +07:00 [INF] Request starting HTTP/2 GET https://localhost:52537/ - null null
+2026-06-30 22:42:00.293 +07:00 [INF] Request finished HTTP/2 GET https://localhost:52537/ - 404 null null 733.6833ms
+2026-06-30 22:42:00.299 +07:00 [INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET https://localhost:52537/, Response status code: 404
+2026-06-30 22:42:13.407 +07:00 [INF] Request starting HTTP/2 GET https://localhost:52537/swagger/index.html - null null
+2026-06-30 22:42:13.452 +07:00 [INF] Request finished HTTP/2 GET https://localhost:52537/swagger/index.html - 200 null text/html;charset=utf-8 45.9286ms
+2026-06-30 22:42:13.464 +07:00 [INF] Request starting HTTP/2 GET https://localhost:52537/swagger/swagger-ui.css - null null
+2026-06-30 22:42:13.464 +07:00 [INF] Request starting HTTP/2 GET https://localhost:52537/swagger/index.js - null null
+2026-06-30 22:42:13.464 +07:00 [INF] Request starting HTTP/2 GET https://localhost:52537/_framework/aspnetcore-browser-refresh.js - null null
+2026-06-30 22:42:13.472 +07:00 [INF] Request finished HTTP/2 GET https://localhost:52537/swagger/index.js - 200 null application/javascript;charset=utf-8 7.1534ms
+2026-06-30 22:42:13.465 +07:00 [INF] Request starting HTTP/2 GET https://localhost:52537/swagger/swagger-ui-standalone-preset.js - null null
+2026-06-30 22:42:13.464 +07:00 [INF] Request starting HTTP/2 GET https://localhost:52537/swagger/index.css - null null
+2026-06-30 22:42:13.464 +07:00 [INF] Request starting HTTP/2 GET https://localhost:52537/_vs/browserLink - null null
+2026-06-30 22:42:13.464 +07:00 [INF] Request starting HTTP/2 GET https://localhost:52537/swagger/swagger-ui-bundle.js - null null
+2026-06-30 22:42:13.480 +07:00 [INF] Sending file. Request path: '/index.css'. Physical path: 'N/A'
+2026-06-30 22:42:13.488 +07:00 [INF] Request finished HTTP/2 GET https://localhost:52537/swagger/index.css - 200 202 text/css 23.1166ms
+2026-06-30 22:42:13.492 +07:00 [INF] Request finished HTTP/2 GET https://localhost:52537/_framework/aspnetcore-browser-refresh.js - 200 14937 application/javascript; charset=utf-8 27.4465ms
+2026-06-30 22:42:13.493 +07:00 [INF] Sending file. Request path: '/swagger-ui-standalone-preset.js'. Physical path: 'N/A'
+2026-06-30 22:42:13.493 +07:00 [INF] Sending file. Request path: '/swagger-ui.css'. Physical path: 'N/A'
+2026-06-30 22:42:13.497 +07:00 [INF] Request finished HTTP/2 GET https://localhost:52537/swagger/swagger-ui-standalone-preset.js - 200 229223 text/javascript 32.1627ms
+2026-06-30 22:42:13.497 +07:00 [INF] Request finished HTTP/2 GET https://localhost:52537/swagger/swagger-ui.css - 200 154948 text/css 32.7622ms
+2026-06-30 22:42:13.498 +07:00 [INF] Sending file. Request path: '/swagger-ui-bundle.js'. Physical path: 'N/A'
+2026-06-30 22:42:13.503 +07:00 [INF] Request finished HTTP/2 GET https://localhost:52537/swagger/swagger-ui-bundle.js - 200 1466324 text/javascript 38.3142ms
+2026-06-30 22:42:13.513 +07:00 [INF] Request finished HTTP/2 GET https://localhost:52537/_vs/browserLink - 200 null text/javascript; charset=UTF-8 48.7919ms
+2026-06-30 22:42:13.693 +07:00 [INF] Request starting HTTP/2 GET https://localhost:52537/swagger/v1/swagger.json - null null
+2026-06-30 22:42:13.706 +07:00 [INF] Request finished HTTP/2 GET https://localhost:52537/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 13.8175ms
+2026-06-30 22:42:13.709 +07:00 [INF] Request starting HTTP/2 GET https://localhost:52537/swagger/favicon-32x32.png - null null
+2026-06-30 22:42:13.711 +07:00 [INF] Sending file. Request path: '/favicon-32x32.png'. Physical path: 'N/A'
+2026-06-30 22:42:13.712 +07:00 [INF] Request finished HTTP/2 GET https://localhost:52537/swagger/favicon-32x32.png - 200 628 image/png 3.4173ms

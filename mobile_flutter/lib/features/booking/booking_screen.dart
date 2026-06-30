@@ -104,9 +104,7 @@ class _BookingScreenState extends State<BookingScreen> {
     } catch (error) {
       if (!mounted) return;
       final message = session.apiClient.messageFromError(error);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -118,102 +116,121 @@ class _BookingScreenState extends State<BookingScreen> {
     if (_error != null) {
       return ErrorStateView(message: _error!, onRetry: _loadBranches);
     }
+
     final sameDaySlots = _slots.where((slot) {
       return slot.date.year == _date.year &&
           slot.date.month == _date.month &&
           slot.date.day == _date.day;
     }).toList();
+
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
       children: [
         _BalanceCard(),
-        const SizedBox(height: 12),
-        DropdownButtonFormField<Branch>(
-          initialValue: _branch,
-          decoration: const InputDecoration(
-            labelText: 'Branch',
-            prefixIcon: Icon(Icons.storefront_outlined),
-          ),
-          items: _branches
-              .map(
-                (branch) =>
-                    DropdownMenuItem(value: branch, child: Text(branch.name)),
-              )
-              .toList(),
-          onChanged: (branch) async {
-            if (branch == null) return;
-            setState(() => _branch = branch);
-            await _loadCourts(branch);
-          },
+        const SizedBox(height: 20),
+        _SectionTitle(
+          title: 'Book a court',
+          subtitle: 'Pick your branch, time and confirm instantly.',
         ),
-        const SizedBox(height: 12),
-        DropdownButtonFormField<Court>(
-          initialValue: _court,
-          decoration: const InputDecoration(
-            labelText: 'Court',
-            prefixIcon: Icon(Icons.sports_tennis),
-          ),
-          items: _courts
-              .map(
-                (court) => DropdownMenuItem(
-                  value: court,
-                  child: Text('${court.name} - ${formatMoney(court.price)}'),
+        const SizedBox(height: 16),
+        _FieldCard(
+          child: Column(
+            children: [
+              DropdownButtonFormField<Branch>(
+                initialValue: _branch,
+                decoration: const InputDecoration(
+                  labelText: 'Branch',
+                  prefixIcon: Icon(Icons.storefront_outlined),
                 ),
-              )
-              .toList(),
-          onChanged: (court) async {
-            if (court == null) return;
-            setState(() => _court = court);
-            await _loadSlots(court);
-          },
-        ),
-        const SizedBox(height: 12),
-        OutlinedButton.icon(
-          onPressed: _pickDate,
-          icon: const Icon(Icons.event),
-          label: Text(formatDate(_date)),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: DropdownButtonFormField<int>(
-                initialValue: _start,
-                decoration: const InputDecoration(labelText: 'Start'),
-                items: _hours
+                items: _branches
                     .map(
-                      (hour) => DropdownMenuItem(
-                        value: hour,
-                        child: Text('$hour:00'),
+                      (branch) => DropdownMenuItem(
+                        value: branch,
+                        child: Text(branch.name),
                       ),
                     )
                     .toList(),
-                onChanged: (value) {
-                  if (value == null) return;
-                  setState(() {
-                    _start = value;
-                    if (_end <= _start) _end = _start + 1;
-                  });
+                onChanged: (branch) async {
+                  if (branch == null) return;
+                  setState(() => _branch = branch);
+                  await _loadCourts(branch);
                 },
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<Court>(
+                initialValue: _court,
+                decoration: const InputDecoration(
+                  labelText: 'Court',
+                  prefixIcon: Icon(Icons.sports_tennis),
+                ),
+                items: _courts
+                    .map(
+                      (court) => DropdownMenuItem(
+                        value: court,
+                        child: Text('${court.name} - ${formatMoney(court.price)}'),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (court) async {
+                  if (court == null) return;
+                  setState(() => _court = court);
+                  await _loadSlots(court);
+                },
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: _pickDate,
+                icon: const Icon(Icons.event),
+                label: Text(formatDate(_date)),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _FieldCard(
+                child: DropdownButtonFormField<int>(
+                  initialValue: _start,
+                  decoration: const InputDecoration(labelText: 'Start'),
+                  items: _hours
+                      .map(
+                        (hour) => DropdownMenuItem(
+                          value: hour,
+                          child: Text('$hour:00'),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) {
+                    if (value == null) return;
+                    setState(() {
+                      _start = value;
+                      if (_end <= _start) _end = _start + 1;
+                    });
+                  },
+                ),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: DropdownButtonFormField<int>(
-                initialValue: _end,
-                decoration: const InputDecoration(labelText: 'End'),
-                items: _hours
-                    .where((hour) => hour > _start)
-                    .map(
-                      (hour) => DropdownMenuItem(
-                        value: hour,
-                        child: Text('$hour:00'),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (value) {
-                  if (value != null) setState(() => _end = value);
-                },
+              child: _FieldCard(
+                child: DropdownButtonFormField<int>(
+                  initialValue: _end,
+                  decoration: const InputDecoration(labelText: 'End'),
+                  items: _hours
+                      .where((hour) => hour > _start)
+                      .map(
+                        (hour) => DropdownMenuItem(
+                          value: hour,
+                          child: Text('$hour:00'),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) {
+                    if (value != null) setState(() => _end = value);
+                  },
+                ),
               ),
             ),
           ],
@@ -229,22 +246,30 @@ class _BookingScreenState extends State<BookingScreen> {
               : const Icon(Icons.check),
           label: const Text('Book by balance'),
         ),
-        const SizedBox(height: 20),
-        Text(
-          'Booked slots on this day',
-          style: Theme.of(context).textTheme.titleMedium,
+        const SizedBox(height: 24),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Booked slots on this day',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+            ),
+            Text(
+              '${sameDaySlots.length} slots',
+              style: const TextStyle(color: Color(0xFF6B7280)),
+            ),
+          ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         if (sameDaySlots.isEmpty)
-          const Text('No booked slot for selected court/date.')
+          const _EmptyState(text: 'No booked slot for selected court/date.')
         else
           ...sameDaySlots.map(
-            (slot) => Card(
-              child: ListTile(
-                leading: const Icon(Icons.schedule),
-                title: Text('${slot.start}:00 - ${slot.end}:00'),
-                subtitle: Text('Booking ${slot.bookingId}'),
-              ),
+            (slot) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _SlotCard(slot: slot),
             ),
           ),
       ],
@@ -256,11 +281,143 @@ class _BalanceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = context.watch<SessionController>().user;
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF003527), Color(0xFF064E3B)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      padding: const EdgeInsets.all(20),
+      child: Row(
+        children: [
+          const CircleAvatar(
+            radius: 24,
+            backgroundColor: Colors.white24,
+            child: Icon(Icons.account_balance_wallet_outlined, color: Colors.white),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Current balance',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.8),
+                        letterSpacing: 1.2,
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  formatMoney(user?.balance ?? 0),
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle({required this.title, required this.subtitle});
+
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+        ),
+        const SizedBox(height: 4),
+        Text(subtitle, style: const TextStyle(color: Color(0xFF4B5563))),
+      ],
+    );
+  }
+}
+
+class _FieldCard extends StatelessWidget {
+  const _FieldCard({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
     return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: child,
+      ),
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Text(text, textAlign: TextAlign.center),
+    );
+  }
+}
+
+class _SlotCard extends StatelessWidget {
+  const _SlotCard({required this.slot});
+
+  final BookedSlot slot;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A000000),
+            blurRadius: 20,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
       child: ListTile(
-        leading: const Icon(Icons.account_balance_wallet_outlined),
-        title: const Text('Current balance'),
-        subtitle: Text(formatMoney(user?.balance ?? 0)),
+        leading: const CircleAvatar(
+          backgroundColor: Color(0xFFE8F5F1),
+          child: Icon(Icons.schedule, color: Color(0xFF003527)),
+        ),
+        title: Text(
+          '${slot.start}:00 - ${slot.end}:00',
+          style: const TextStyle(fontWeight: FontWeight.w700),
+        ),
+        subtitle: Text('Booking ${slot.bookingId}'),
       ),
     );
   }

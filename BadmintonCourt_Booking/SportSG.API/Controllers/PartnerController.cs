@@ -223,63 +223,69 @@ public class PartnerController(IUnitOfWork uow, ILogger<PartnerController> logge
         if (!allowedRoles.Contains(req.RoleCode))
             return BadRequest(new { error = $"RoleCode phải là một trong: {string.Join(", ", allowedRoles)}." });
 
-        await uow.BeginTransactionAsync(ct);
-        try
+        var partner = await uow.Partners.GetByIdAsync(partnerId, ct)
+            ?? throw new NotFoundException($"Partner {partnerId} không tồn tại.");
+
+        if (partner.Status != PartnerStatus.Active)
+            throw new BusinessException("Chỉ có thể gán thành viên cho Partner đang Active.");
+
+        var user = await uow.Users.GetByIdAsync(req.UserId, ct)
+            ?? throw new NotFoundException($"User {req.UserId} không tồn tại.");
+
+        var role = await uow.Roles.FirstOrDefaultAsync(r => r.Code == req.RoleCode, ct)
+            ?? throw new NotFoundException($"Role '{req.RoleCode}' không tồn tại trong hệ thống.");
+
+        // Rule: 1 user chỉ là PartnerAdmin của 1 partner tại một thời điểm
+        if (req.RoleCode == Roles.PartnerAdmin)
         {
-            var partner = await uow.Partners.GetByIdAsync(partnerId, ct)
-                ?? throw new NotFoundException($"Partner {partnerId} không tồn tại.");
-
-            if (partner.Status != PartnerStatus.Active)
-                throw new BusinessException("Chỉ có thể gán thành viên cho Partner đang Active.");
-
-            var user = await uow.Users.GetByIdAsync(req.UserId, ct)
-                ?? throw new NotFoundException($"User {req.UserId} không tồn tại.");
-
-            var role = await uow.Roles.FirstOrDefaultAsync(r => r.Code == req.RoleCode, ct)
-                ?? throw new NotFoundException($"Role '{req.RoleCode}' không tồn tại.");
-
-            // Rule: 1 user chỉ là PartnerAdmin của 1 partner
-            if (req.RoleCode == Roles.PartnerAdmin)
-            {
-                var existingAdmin = await uow.PartnerUserRoles.AnyAsync(
-                    r => r.UserId == req.UserId
-                      && r.Role.Code == Roles.PartnerAdmin
-                      && r.IsActive
-                      && r.PartnerId != partnerId, ct);
-
-                if (existingAdmin)
-                    throw new BusinessException(
-                        $"User '{user.Email}' đã là PartnerAdmin của partner khác. Một user chỉ có thể quản lý một partner.");
-            }
-
-            // BranchManager / Staff phải có branchId thuộc partner
-            Guid? branchId = null;
-            if (req.RoleCode is Roles.BranchManager or Roles.Staff)
-            {
-                if (!req.BranchId.HasValue)
-                    throw new BusinessException($"BranchId là bắt buộc khi gán role {req.RoleCode}.");
-
-                var branch = await uow.Branches.GetByIdAsync(req.BranchId.Value, ct)
-                    ?? throw new NotFoundException($"Chi nhánh {req.BranchId} không tồn tại.");
-
-                if (branch.PartnerId != partnerId)
-                    throw new BusinessException("Chi nhánh này không thuộc partner được chỉ định.");
-
-                branchId = branch.BranchId;
-            }
-
-            // Prevent duplicate assignment
-            var duplicate = await uow.PartnerUserRoles.AnyAsync(
+            var existingAdmin = await uow.PartnerUserRoles.AnyAsync(
                 r => r.UserId == req.UserId
-                  && r.PartnerId == partnerId
                   && r.RoleId == role.RoleId
-                  && r.BranchId == branchId
-                  && r.IsActive, ct);
+                  && r.IsActive
+                  && r.PartnerId != partnerId, ct);
 
-            if (duplicate)
+            if (existingAdmin)
+                throw new BusinessException(
+                    $"User '{user.Email}' đã là PartnerAdmin của partner khác. Một user chỉ có thể quản lý một partner.");
+        }
+
+        // BranchManager / Staff phải có branchId thuộc partner
+        Guid? branchId = null;
+        if (req.RoleCode is Roles.BranchManager or Roles.Staff)
+        {
+            if (!req.BranchId.HasValue)
+                throw new BusinessException($"BranchId là bắt buộc khi gán role {req.RoleCode}.");
+
+            var branch = await uow.Branches.GetByIdAsync(req.BranchId.Value, ct)
+                ?? throw new NotFoundException($"Chi nhánh {req.BranchId} không tồn tại.");
+
+            if (branch.PartnerId != partnerId)
+                throw new BusinessException("Chi nhánh này không thuộc partner được chỉ định.");
+
+            branchId = branch.BranchId;
+        }
+
+        // Check for existing assignment (active or inactive) to avoid unique-index violation
+        var existing = await uow.PartnerUserRoles.FirstOrDefaultAsync(
+            r => r.UserId == req.UserId
+              && r.PartnerId == partnerId
+              && r.RoleId == role.RoleId
+              && r.BranchId == branchId, ct);
+
+        int assignmentId;
+        if (existing is not null)
+        {
+            if (existing.IsActive)
                 throw new ConflictException(
                     $"User '{user.Email}' đã có role '{req.RoleCode}' trong partner này.");
 
+            // Reactivate the previously deactivated assignment
+            existing.IsActive = true;
+            uow.PartnerUserRoles.Update(existing);
+            assignmentId = existing.Id;
+        }
+        else
+        {
             var assignment = new PartnerUserRole
             {
                 UserId    = req.UserId,
@@ -288,29 +294,24 @@ public class PartnerController(IUnitOfWork uow, ILogger<PartnerController> logge
                 RoleId    = role.RoleId,
                 IsActive  = true,
             };
-
             await uow.PartnerUserRoles.AddAsync(assignment, ct);
-            await uow.SaveChangesAsync(ct);
-            await uow.CommitAsync(ct);
-
-            logger.LogInformation(
-                "SuperAdmin {AdminId} assigned user {UserId} as {Role} in partner {PartnerId}",
-                HttpContext.GetUserId(), req.UserId, req.RoleCode, partnerId);
-
-            return Ok(new {
-                assignment.Id,
-                assignment.UserId,
-                UserName  = user.Email,
-                RoleCode  = req.RoleCode,
-                assignment.PartnerId,
-                assignment.BranchId,
-            });
+            assignmentId = assignment.Id;
         }
-        catch
-        {
-            await uow.RollbackAsync(ct);
-            throw;
-        }
+
+        await uow.SaveChangesAsync(ct);
+
+        logger.LogInformation(
+            "SuperAdmin {AdminId} assigned user {UserId} as {Role} in partner {PartnerId}",
+            HttpContext.GetUserId(), req.UserId, req.RoleCode, partnerId);
+
+        return Ok(new {
+            Id        = assignmentId,
+            UserId    = req.UserId,
+            UserName  = user.Email,
+            RoleCode  = req.RoleCode,
+            PartnerId = partnerId,
+            BranchId  = branchId,
+        });
     }
 
     // ── Members: remove ──────────────────────────────────────────────────

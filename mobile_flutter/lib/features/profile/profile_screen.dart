@@ -45,63 +45,79 @@ class _ProfileScreenState extends State<ProfileScreen> {
           return ErrorStateView(message: '${snapshot.error}', onRetry: _reload);
         }
         final detail = snapshot.data;
+        final displayName = detail?.fullName.isNotEmpty == true
+            ? detail!.fullName
+            : session.claims?.username ?? 'User';
+        final avatarText = displayName.characters.first.toUpperCase();
+
         return ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
           children: [
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(18),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+            Container(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF003527), Color(0xFF064E3B)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(24),
+              ),
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 30,
+                    backgroundColor: Colors.white.withValues(alpha: 0.16),
+                    child: Text(
+                      avatarText,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 20,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        CircleAvatar(
-                          radius: 30,
-                          child: Text(
-                            (detail?.fullName.isNotEmpty == true
-                                    ? detail!.fullName
-                                    : session.claims?.username ?? 'U')
-                                .characters
-                                .first
-                                .toUpperCase(),
+                        Text(
+                          displayName,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
                           ),
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                detail?.fullName.isNotEmpty == true
-                                    ? detail!.fullName
-                                    : session.claims?.username ?? 'User',
-                                style: Theme.of(context).textTheme.titleLarge,
-                              ),
-                              Text(session.claims?.role ?? ''),
-                            ],
+                        const SizedBox(height: 4),
+                        Text(
+                          session.claims?.role ?? '',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.8),
                           ),
                         ),
                       ],
                     ),
-                    const Divider(height: 28),
-                    _Line(label: 'Email', value: detail?.email ?? '-'),
-                    _Line(label: 'Phone', value: detail?.phone ?? '-'),
-                    _Line(
-                      label: 'Balance',
-                      value: formatMoney(account?.balance ?? 0),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
+            _InfoCard(
+              children: [
+                _Line(label: 'Email', value: detail?.email ?? '-'),
+                _Line(label: 'Phone', value: detail?.phone ?? '-'),
+                _Line(label: 'Balance', value: formatMoney(account?.balance ?? 0)),
+              ],
+            ),
+            const SizedBox(height: 16),
             FilledButton.icon(
               onPressed: () => _showBuyBalance(context),
               icon: const Icon(Icons.add_card),
               label: const Text('Buy balance'),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             OutlinedButton.icon(
               onPressed: () async {
                 await session.refreshUser();
@@ -120,7 +136,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (_) => _BuyBalanceSheet(api: widget.api),
+    );
+  }
+}
+
+class _InfoCard extends StatelessWidget {
+  const _InfoCard({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: children,
+        ),
+      ),
     );
   }
 }
@@ -173,9 +209,9 @@ class _BuyBalanceSheetState extends State<_BuyBalanceSheet> {
     final userId = session.userId;
     final amount = int.tryParse(_amount.text.trim());
     if (userId == null || amount == null || amount < 10000) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Minimum amount is 10000.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Minimum amount is 10000.')),
+      );
       return;
     }
     setState(() => _loading = true);
@@ -196,9 +232,7 @@ class _BuyBalanceSheetState extends State<_BuyBalanceSheet> {
     } catch (error) {
       if (!mounted) return;
       final message = session.apiClient.messageFromError(error);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -206,12 +240,16 @@ class _BuyBalanceSheetState extends State<_BuyBalanceSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFFF8F9FA),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 16,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+        left: 20,
+        right: 20,
+        top: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,

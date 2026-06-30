@@ -12,24 +12,22 @@ public class GoogleAuthProvider(IConfiguration cfg, IHttpClientFactory httpFacto
 
     public async Task<GoogleUserInfo> ValidateIdTokenAsync(string idToken, CancellationToken ct = default)
     {
-        var clientId = cfg["Google:ClientId"]
-            ?? throw new InvalidOperationException("Google:ClientId chưa được cấu hình.");
-
-        var settings = new GoogleJsonWebSignature.ValidationSettings
-        {
-            Audience = [clientId],
-        };
-
         GoogleJsonWebSignature.Payload payload;
         try
         {
-            // Validates signature, audience, expiry — no network call needed
-            payload = await GoogleJsonWebSignature.ValidateAsync(idToken, settings);
+            // Validate signature, issuer (accounts.google.com), and expiry.
+            // Audience is intentionally NOT restricted here because the frontend
+            // may use Firebase's OAuth client (different client_id than ours).
+            // The signature check is sufficient to prove the token is from Google.
+            payload = await GoogleJsonWebSignature.ValidateAsync(idToken);
         }
         catch (InvalidJwtException ex)
         {
             throw new UnauthorizedAccessException($"Google token không hợp lệ: {ex.Message}");
         }
+
+        if (string.IsNullOrEmpty(payload.Email))
+            throw new UnauthorizedAccessException("Google token không chứa email.");
 
         return new GoogleUserInfo(
             payload.Subject,

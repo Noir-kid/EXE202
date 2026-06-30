@@ -62,8 +62,11 @@ const Popular = ({ searchCriteria }) => {
                                                 src={branch.imageUrl}
                                                 alt={branch.name}
                                                 onError={(e) => {
-                                                    e.target.style.display = 'none';
-                                                    e.target.nextSibling && (e.target.nextSibling.style.display = 'flex');
+                                                    e.currentTarget.onerror = null;
+                                                    e.currentTarget.style.display = 'none';
+                                                    if (e.currentTarget.nextElementSibling) {
+                                                        e.currentTarget.nextElementSibling.style.display = 'flex';
+                                                    }
                                                 }}
                                             />
                                         ) : null}

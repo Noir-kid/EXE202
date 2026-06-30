@@ -1,4 +1,4 @@
--- ================================================================
+﻿-- ================================================================
 -- SPORTSG PLATFORM — FULL SETUP (TẠO DB + BẢNG + DỮ LIỆU DEMO)
 -- Ngày tạo : 2026-06-28
 -- ================================================================
@@ -719,16 +719,16 @@ INSERT INTO [Banners]
 VALUES
     (1, N'Đặt sân cầu lông ưu đãi hè 2026',
      N'Giảm ngay 10% tất cả sân cầu lông tháng 7',
-     N'https://cdn.sportsg.vn/banners/summer2026.jpg',
+     N'https://picsum.photos/seed/summer2026/1200/400',
      N'/promotions/SUMMER26', N'Home', 1, 1, '2026-06-01', '2026-08-31', @Now),
     (2, N'SportZone khai trương chi nhánh Thủ Đức',
      N'Ưu đãi 30% tuần khai trương 01-07/07/2026',
-     N'https://cdn.sportsg.vn/banners/sportzone-thuduc.jpg',
+     N'https://picsum.photos/seed/szthuduc/1200/400',
      N'/branches/30000000-0000-0000-0000-000000000006',
      N'Home', 2, 1, '2026-07-01', '2026-07-07', @Now),
     (3, N'Thành viên VIP — đặc quyền đẳng cấp',
      N'Đăng ký gói thành viên, giảm đến 20% mỗi lần đặt',
-     N'https://cdn.sportsg.vn/banners/membership-vip.jpg',
+     N'https://picsum.photos/seed/membership/1200/400',
      N'/memberships', N'Home', 3, 1, NULL, NULL, @Now);
 SET IDENTITY_INSERT [Banners] OFF;
 
@@ -739,15 +739,15 @@ INSERT INTO [Partners]
 VALUES
     (@P_SYS, N'SportSG Platform', N'SportSG Platform JSC', N'0100000001',
      N'system@sportsg.com', N'024 3999 0000',
-     N'https://cdn.sportsg.vn/logos/sportsg.png', N'https://sportsg.vn',
+     N'https://placehold.co/200x200/16a34a/ffffff?text=SportSG', N'https://sportsg.vn',
      0.00, N'Active', @Now, @U_SUPER, @Now, @Now),
     (@P_HN, N'BMTC Hà Nội', N'Công ty TNHH BMTC Hà Nội', N'0123456789',
      N'contact@bmtc.vn', N'024 3822 1234',
-     N'https://cdn.sportsg.vn/logos/bmtc.png', N'https://bmtc.vn',
+     N'https://placehold.co/200x200/1d4ed8/ffffff?text=BMTC', N'https://bmtc.vn',
      10.00, N'Active', @Now, @U_SUPER, @Now, @Now),
     (@P_SG, N'SportZone Sài Gòn', N'Công ty CP SportZone', N'0987654321',
      N'contact@sportzone.vn', N'028 3822 5678',
-     N'https://cdn.sportsg.vn/logos/sportzone.png', N'https://sportzone.vn',
+     N'https://placehold.co/200x200/dc2626/ffffff?text=SportZone', N'https://sportzone.vn',
      12.00, N'Active', @Now, @U_SUPER, @Now, @Now);
 
 -- ── 6. Users ─────────────────────────────────────────────────────
@@ -776,41 +776,41 @@ VALUES
     (@B1,@P_HN,N'BMTC Cầu Giấy',
      N'26 Duy Tân, Cầu Giấy',N'Hà Nội',N'Cầu Giấy',
      N'024 3911 0001',N'caugiay@bmtc.vn',
-     N'https://cdn.sportsg.vn/branches/bmtc-caugiay.jpg',
+     N'https://picsum.photos/seed/bmtccg/800/500',
      N'https://maps.google.com/?q=BMTC+Cau+Giay',
      21.028511,105.801340,'06:00','22:00',N'Active',@Now,@Now),
 
     (@B2,@P_HN,N'BMTC Long Biên',
      N'12 Nguyễn Văn Cừ, Long Biên',N'Hà Nội',N'Long Biên',
      N'024 3911 0002',N'longbien@bmtc.vn',
-     N'https://cdn.sportsg.vn/branches/bmtc-longbien.jpg',
+     N'https://picsum.photos/seed/bmtclb/800/500',
      N'https://maps.google.com/?q=BMTC+Long+Bien',
      21.038492,105.875612,'07:00','21:00',N'Active',@Now,@Now),
 
     (@B3,@P_SG,N'SportZone Quận 1',
      N'88 Lê Lợi, Quận 1',N'Hồ Chí Minh',N'Quận 1',
      N'028 3822 0001',N'quan1@sportzone.vn',
-     N'https://cdn.sportsg.vn/branches/sportzone-q1.jpg',
+     N'https://picsum.photos/seed/szq1/800/500',
      N'https://maps.google.com/?q=SportZone+Q1+HCM',
      10.773031,106.700562,'06:00','23:00',N'Active',@Now,@Now),
 
     (@B4,@P_SG,N'SportZone Quận 7',
      N'20 Nguyễn Thị Thập, Quận 7',N'Hồ Chí Minh',N'Quận 7',
      N'028 3822 0002',N'quan7@sportzone.vn',
-     N'https://cdn.sportsg.vn/branches/sportzone-q7.jpg',
+     N'https://picsum.photos/seed/szq7/800/500',
      N'https://maps.google.com/?q=SportZone+Q7+HCM',
      10.732511,106.718451,'06:00','22:00',N'Active',@Now,@Now),
 
     (@B5,@P_HN,N'BMTC Hoàng Mai',
      N'5 Giải Phóng, Hoàng Mai',N'Hà Nội',N'Hoàng Mai',
      N'024 3911 0003',N'hoangmai@bmtc.vn',
-     N'https://cdn.sportsg.vn/branches/bmtc-hoangmai.jpg',
+     N'https://picsum.photos/seed/bmtchm/800/500',
      NULL,20.989410,105.844830,'07:00','21:00',N'Active',@Now,@Now),
 
     (@B6,@P_SG,N'SportZone Thủ Đức',
      N'100 Võ Văn Ngân, Thủ Đức',N'Hồ Chí Minh',N'Thủ Đức',
      N'028 3822 0003',N'thuduc@sportzone.vn',
-     N'https://cdn.sportsg.vn/branches/sportzone-thuduc.jpg',
+     N'https://picsum.photos/seed/sztd/800/500',
      NULL,10.851210,106.754830,'06:00','22:00',N'Active',@Now,@Now);
 
 -- ── 8. BranchSportTypes ──────────────────────────────────────────
@@ -901,21 +901,21 @@ SET IDENTITY_INSERT [CourtImages] ON;
 INSERT INTO [CourtImages]
     ([CourtImageId],[CourtId],[Url],[PublicId],[IsPrimary],[SortOrder],[CreatedAt])
 VALUES
-    (1, @C1, N'https://cdn.sportsg.vn/courts/bmtc-cg-badminton01-1.jpg',N'courts/c1-1', 1,1,@Now),
-    (2, @C1, N'https://cdn.sportsg.vn/courts/bmtc-cg-badminton01-2.jpg',N'courts/c1-2', 0,2,@Now),
-    (3, @C2, N'https://cdn.sportsg.vn/courts/bmtc-cg-badminton02-1.jpg',N'courts/c2-1', 1,1,@Now),
-    (4, @C3, N'https://cdn.sportsg.vn/courts/bmtc-cg-tennis01-1.jpg',  N'courts/c3-1', 1,1,@Now),
-    (5, @C3, N'https://cdn.sportsg.vn/courts/bmtc-cg-tennis01-2.jpg',  N'courts/c3-2', 0,2,@Now),
-    (6, @C4, N'https://cdn.sportsg.vn/courts/bmtc-lb-badminton01-1.jpg',N'courts/c4-1',1,1,@Now),
-    (7, @C5, N'https://cdn.sportsg.vn/courts/bmtc-lb-tabletennis-1.jpg',N'courts/c5-1',1,1,@Now),
-    (8, @C6, N'https://cdn.sportsg.vn/courts/sz-q1-badminton01-1.jpg', N'courts/c6-1', 1,1,@Now),
-    (9, @C6, N'https://cdn.sportsg.vn/courts/sz-q1-badminton01-2.jpg', N'courts/c6-2', 0,2,@Now),
-    (10,@C7, N'https://cdn.sportsg.vn/courts/sz-q1-tennis01-1.jpg',    N'courts/c7-1', 1,1,@Now),
-    (11,@C8, N'https://cdn.sportsg.vn/courts/sz-q1-basketball-1.jpg',  N'courts/c8-1', 1,1,@Now),
-    (12,@C9, N'https://cdn.sportsg.vn/courts/sz-q7-badminton01-1.jpg', N'courts/c9-1', 1,1,@Now),
-    (13,@C10,N'https://cdn.sportsg.vn/courts/sz-q7-football5-1.jpg',   N'courts/c10-1',1,1,@Now),
-    (14,@C11,N'https://cdn.sportsg.vn/courts/bmtc-hm-badminton01-1.jpg',N'courts/c11-1',1,1,@Now),
-    (15,@C12,N'https://cdn.sportsg.vn/courts/bmtc-hm-volleyball-1.jpg',N'courts/c12-1',1,1,@Now);
+    (1, @C1, N'https://picsum.photos/seed/court1a/600/400',N'courts/c1-1', 1,1,@Now),
+    (2, @C1, N'https://picsum.photos/seed/court1b/600/400',N'courts/c1-2', 0,2,@Now),
+    (3, @C2, N'https://picsum.photos/seed/court2a/600/400',N'courts/c2-1', 1,1,@Now),
+    (4, @C3, N'https://picsum.photos/seed/court3a/600/400',  N'courts/c3-1', 1,1,@Now),
+    (5, @C3, N'https://picsum.photos/seed/court3b/600/400',  N'courts/c3-2', 0,2,@Now),
+    (6, @C4, N'https://picsum.photos/seed/court4a/600/400',N'courts/c4-1',1,1,@Now),
+    (7, @C5, N'https://picsum.photos/seed/court5a/600/400',N'courts/c5-1',1,1,@Now),
+    (8, @C6, N'https://picsum.photos/seed/court6a/600/400', N'courts/c6-1', 1,1,@Now),
+    (9, @C6, N'https://picsum.photos/seed/court6b/600/400', N'courts/c6-2', 0,2,@Now),
+    (10,@C7, N'https://picsum.photos/seed/court7a/600/400',    N'courts/c7-1', 1,1,@Now),
+    (11,@C8, N'https://picsum.photos/seed/court8a/600/400',  N'courts/c8-1', 1,1,@Now),
+    (12,@C9, N'https://picsum.photos/seed/court9a/600/400', N'courts/c9-1', 1,1,@Now),
+    (13,@C10,N'https://picsum.photos/seed/court10a/600/400',   N'courts/c10-1',1,1,@Now),
+    (14,@C11,N'https://picsum.photos/seed/court11a/600/400',N'courts/c11-1',1,1,@Now),
+    (15,@C12,N'https://picsum.photos/seed/court12a/600/400',N'courts/c12-1',1,1,@Now);
 SET IDENTITY_INSERT [CourtImages] OFF;
 
 -- ── 15. CourtFacilities ──────────────────────────────────────────

@@ -10,3 +10,15 @@ D:\SportSG-main\SportBookingPlatform\SportBooking.Domain\obj\Debug\net9.0\SportB
 D:\SportSG-main\SportBookingPlatform\SportBooking.Domain\obj\Debug\net9.0\refint\SportBooking.Domain.dll
 D:\SportSG-main\SportBookingPlatform\SportBooking.Domain\obj\Debug\net9.0\SportBooking.Domain.pdb
 D:\SportSG-main\SportBookingPlatform\SportBooking.Domain\obj\Debug\net9.0\ref\SportBooking.Domain.dll
+D:\EXE\SportBookingPlatform\SportBooking.Domain\bin\Debug\net9.0\SportBooking.Domain.deps.json
+D:\EXE\SportBookingPlatform\SportBooking.Domain\bin\Debug\net9.0\SportBooking.Domain.dll
+D:\EXE\SportBookingPlatform\SportBooking.Domain\bin\Debug\net9.0\SportBooking.Domain.pdb
+D:\EXE\SportBookingPlatform\SportBooking.Domain\obj\Debug\net9.0\SportBooking.Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\EXE\SportBookingPlatform\SportBooking.Domain\obj\Debug\net9.0\SportBooking.Domain.AssemblyInfoInputs.cache
+D:\EXE\SportBookingPlatform\SportBooking.Domain\obj\Debug\net9.0\SportBooking.Domain.AssemblyInfo.cs
+D:\EXE\SportBookingPlatform\SportBooking.Domain\obj\Debug\net9.0\SportBooking.Domain.csproj.CoreCompileInputs.cache
+D:\EXE\SportBookingPlatform\SportBooking.Domain\obj\Debug\net9.0\SportBooking.Domain.sourcelink.json
+D:\EXE\SportBookingPlatform\SportBooking.Domain\obj\Debug\net9.0\SportBooking.Domain.dll
+D:\EXE\SportBookingPlatform\SportBooking.Domain\obj\Debug\net9.0\refint\SportBooking.Domain.dll
+D:\EXE\SportBookingPlatform\SportBooking.Domain\obj\Debug\net9.0\SportBooking.Domain.pdb
+D:\EXE\SportBookingPlatform\SportBooking.Domain\obj\Debug\net9.0\ref\SportBooking.Domain.dll
