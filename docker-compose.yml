@@ -45,73 +45,11 @@ services:
       args:
         REACT_APP_API_BASE_URL: ${REACT_APP_API_BASE_URL:-/api}
     container_name: sportsg-frontend
-    depends_on:
-      - backend
-    restart: unless-stopped
-
-  nginx:
-    image: nginx:1.27-alpine
-    container_name: sportsg-nginx
     ports:
-      - "80:80"
-      - "443:443"
-    environment:
-      NGINX_SERVER_NAME: ${NGINX_SERVER_NAME:?set NGINX_SERVER_NAME in your local .env file}
-    volumes:
-      - ./nginx.conf:/etc/nginx/templates/default.conf.template:ro
-      - certbot-webroot:/var/www/certbot
-      - letsencrypt:/etc/letsencrypt
+      - "3000:80"
     depends_on:
-      - frontend
       - backend
     restart: unless-stopped
-
-  certbot:
-    image: certbot/certbot:latest
-    container_name: sportsg-certbot
-    profiles:
-      - renew
-    environment:
-      NGINX_SERVER_NAME: ${NGINX_SERVER_NAME:?set NGINX_SERVER_NAME in your local .env file}
-      CERTBOT_EMAIL: ${CERTBOT_EMAIL:?set CERTBOT_EMAIL in your local .env file}
-    volumes:
-      - certbot-webroot:/var/www/certbot
-      - letsencrypt:/etc/letsencrypt
-    entrypoint:
-      - /bin/sh
-      - -c
-    command: |
-      trap exit TERM; while :; do
-        certbot renew --webroot -w /var/www/certbot --quiet;
-        sleep 12h & wait $${!};
-      done
-    restart: unless-stopped
-
-  certbot-init:
-    image: certbot/certbot:latest
-    container_name: sportsg-certbot-init
-    profiles:
-      - init
-    environment:
-      NGINX_SERVER_NAME: ${NGINX_SERVER_NAME:?set NGINX_SERVER_NAME in your local .env file}
-      CERTBOT_EMAIL: ${CERTBOT_EMAIL:?set CERTBOT_EMAIL in your local .env file}
-    volumes:
-      - certbot-webroot:/var/www/certbot
-      - letsencrypt:/etc/letsencrypt
-    entrypoint:
-      - /bin/sh
-      - -c
-    command: |
-      certbot certonly \
-        --webroot \
-        -w /var/www/certbot \
-        -d ${NGINX_SERVER_NAME} \
-        --email ${CERTBOT_EMAIL} \
-        --agree-tos \
-        --no-eff-email \
-        --non-interactive
 
 volumes:
   sqlserver-data:
-  certbot-webroot:
-  letsencrypt:
