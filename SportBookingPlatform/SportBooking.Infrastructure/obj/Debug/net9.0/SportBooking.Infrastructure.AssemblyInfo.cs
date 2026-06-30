@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SportBooking.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+adb68f4324a8bd38bb26d606abb6c0ebcb339287")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1d13304c6602bd0d960983f3dbc91ea47d578b31")]
 [assembly: System.Reflection.AssemblyProductAttribute("SportBooking.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SportBooking.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

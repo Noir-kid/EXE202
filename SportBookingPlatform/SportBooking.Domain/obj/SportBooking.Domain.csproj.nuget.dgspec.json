@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\SportSG-main\\SportBookingPlatform\\SportBooking.Domain\\SportBooking.Domain.csproj": {}
+    "D:\\EXE\\SportBookingPlatform\\SportBooking.Domain\\SportBooking.Domain.csproj": {}
   },
   "projects": {
-    "D:\\SportSG-main\\SportBookingPlatform\\SportBooking.Domain\\SportBooking.Domain.csproj": {
+    "D:\\EXE\\SportBookingPlatform\\SportBooking.Domain\\SportBooking.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\SportSG-main\\SportBookingPlatform\\SportBooking.Domain\\SportBooking.Domain.csproj",
+        "projectUniqueName": "D:\\EXE\\SportBookingPlatform\\SportBooking.Domain\\SportBooking.Domain.csproj",
         "projectName": "SportBooking.Domain",
-        "projectPath": "D:\\SportSG-main\\SportBookingPlatform\\SportBooking.Domain\\SportBooking.Domain.csproj",
+        "projectPath": "D:\\EXE\\SportBookingPlatform\\SportBooking.Domain\\SportBooking.Domain.csproj",
         "packagesPath": "C:\\Users\\admin\\.nuget\\packages\\",
-        "outputPath": "D:\\SportSG-main\\SportBookingPlatform\\SportBooking.Domain\\obj\\",
+        "outputPath": "D:\\EXE\\SportBookingPlatform\\SportBooking.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

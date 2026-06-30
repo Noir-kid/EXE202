@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e ' *)",
+      "Bash(xargs grep -l \"GoogleLoginRequest\")",
+      "Bash(xargs grep -l \"IGoogleAuthProvider\\\\|ValidateIdTokenAsync\")",
+      "Bash(xargs grep -l \"GoogleAuthProvider\\\\|IGoogleAuth\\\\|ValidateIdToken\")",
+      "Bash(xargs grep -l \"Google\\\\|IdToken\\\\|firebase\")"
+    ],
+    "additionalDirectories": [
+      "d:\\EXE\\src\\Scene\\court",
+      "d:\\EXE\\src\\Scene\\courtBranch",
+      "d:\\EXE\\src\\Scene\\ownerStaff",
+      "d:\\EXE\\src",
+      "d:\\EXE\\src\\Components\\Login",
+      "d:\\EXE\\src\\Components\\Register"
+    ]
+  }
+}

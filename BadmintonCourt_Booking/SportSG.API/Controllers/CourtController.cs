@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SportSG.API.Authorization;
 using SportSG.API.Extensions;
+using SportSG.API.Middleware;
 using SportSG.Domain.Entities;
 using SportSG.Domain.Enums;
 using SportSG.Application.Repositories;
@@ -10,9 +12,10 @@ namespace SportSG.API.Controllers;
 
 [ApiController]
 [Route("api/courts")]
-public class CourtController(IUnitOfWork uow) : ControllerBase
+public class CourtController(IUnitOfWork uow, ILogger<CourtController> logger) : ControllerBase
 {
-    /// <summary>Public search — customers find courts.</summary>
+    // ── Public: search active courts ─────────────────────────────────────
+
     [HttpGet]
     [AllowAnonymous]
     public async Task<IActionResult> Search(
@@ -31,20 +34,29 @@ public class CourtController(IUnitOfWork uow) : ControllerBase
         if (sportTypeId.HasValue) q = q.Where(c => c.SportTypeId == sportTypeId);
         if (maxPrice.HasValue)    q = q.Where(c => c.BasePrice <= maxPrice);
 
-        var items = await q.Select(c => new {
-            c.CourtId, c.Name, c.Description, c.BasePrice,
-            ImageUrl   = c.Images.Where(i => i.IsPrimary).Select(i => i.Url).FirstOrDefault()
-                         ?? c.Images.OrderBy(i => i.SortOrder).Select(i => i.Url).FirstOrDefault(),
-            c.Status, c.SportTypeId,
-            SportName  = c.SportType.Name,
-            BranchName = c.Branch.Name,
-            BranchCity = c.Branch.City,
-        }).ToListAsync(ct);
+        var items = await q
+            .OrderBy(c => c.BasePrice)
+            .Select(c => new {
+                c.CourtId, c.Name, c.Description, c.BasePrice,
+                ImageUrl   = c.Images.Where(i => i.IsPrimary).Select(i => i.Url).FirstOrDefault()
+                             ?? c.Images.OrderBy(i => i.SortOrder).Select(i => i.Url).FirstOrDefault(),
+                c.Status, c.SportTypeId,
+                SportName  = c.SportType.Name,
+                BranchName = c.Branch.Name,
+                BranchCity = c.Branch.City,
+            })
+            .ToListAsync(ct);
 
         return Ok(items);
     }
 
-    /// <summary>Authenticated management view — all courts scoped by role.</summary>
+    // ── Management view (scoped by role) ────────────────────────────────
+
+    /// <summary>
+    /// SuperAdmin: tất cả courts.
+    /// PartnerAdmin: courts thuộc branches của partner mình — không cần truyền PartnerId.
+    /// BranchManager / Staff: courts trong branch của mình.
+    /// </summary>
     [HttpGet("manage")]
     [Authorize]
     public async Task<IActionResult> Manage(CancellationToken ct)
@@ -68,17 +80,23 @@ public class CourtController(IUnitOfWork uow) : ControllerBase
             _                   => q.Where(c => c.Status == CourtStatus.Active),
         };
 
-        var items = await q.Select(c => new {
-            c.CourtId, c.Name, c.Description, c.BasePrice,
-            ImageUrl   = c.Images.Where(i => i.IsPrimary).Select(i => i.Url).FirstOrDefault()
-                         ?? c.Images.OrderBy(i => i.SortOrder).Select(i => i.Url).FirstOrDefault(),
-            c.Status, c.SportTypeId, c.BranchId,
-            SportName  = c.SportType.Name,
-            BranchName = c.Branch.Name,
-        }).ToListAsync(ct);
+        var items = await q
+            .OrderBy(c => c.Branch.Name).ThenBy(c => c.Name)
+            .Select(c => new {
+                c.CourtId, c.Name, c.Description, c.BasePrice, c.Status, c.Capacity,
+                c.SportTypeId, c.BranchId,
+                SportName  = c.SportType.Name,
+                BranchName = c.Branch.Name,
+                PartnerId  = c.Branch.PartnerId,
+                ImageUrl   = c.Images.Where(i => i.IsPrimary).Select(i => i.Url).FirstOrDefault()
+                             ?? c.Images.OrderBy(i => i.SortOrder).Select(i => i.Url).FirstOrDefault(),
+            })
+            .ToListAsync(ct);
 
         return Ok(items);
     }
+
+    // ── Public: court detail ─────────────────────────────────────────────
 
     [HttpGet("{id:guid}")]
     [AllowAnonymous]
@@ -104,24 +122,35 @@ public class CourtController(IUnitOfWork uow) : ControllerBase
             BranchId     = court.BranchId,
             BranchName   = court.Branch.Name,
             BranchAddress= court.Branch.Address,
+            PartnerId    = court.Branch.PartnerId,
             PartnerName  = court.Branch.Partner.Name,
             Images       = court.Images.Select(i => new { i.CourtImageId, i.Url, i.IsPrimary, i.SortOrder }),
-            Facilities   = court.Facilities.Select(f => new { f.CourtFacilityId, f.Name }),
-            PricingRules = court.PricingRules,
+            Facilities   = court.Facilities.Select(f => new { f.CourtFacilityId, f.Name, f.Icon }),
+            PricingRules = court.PricingRules.Select(r => new { r.RuleId, r.DayOfWeek, r.StartTime, r.EndTime, r.Price, r.Label }),
             Reviews      = court.Reviews.Select(r => new { r.ReviewId, r.Rating, r.Comment, r.CreatedAt }),
         });
     }
 
+    // ── Create ───────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Xác thực chain: Court → Branch → Partner.
+    /// PartnerAdmin không thể tạo court trong branch của partner khác.
+    /// </summary>
     [HttpPost]
     [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.PartnerAdmin}")]
     public async Task<IActionResult> Create([FromBody] CreateCourtRequest req, CancellationToken ct)
     {
-        var branch = await uow.Branches.GetByIdAsync(req.BranchId, ct);
-        if (branch is null) return NotFound("Chi nhánh không tồn tại.");
+        if (req.BasePrice <= 0)
+            return BadRequest(new { error = "BasePrice phải lớn hơn 0." });
 
-        if (HttpContext.GetRole() == Roles.PartnerAdmin
-            && branch.PartnerId != HttpContext.GetPartnerId())
-            return Forbid();
+        // Kiểm tra branch tồn tại và quyền truy cập (chain: branch → partner)
+        await TenantGuard.RequireBranchOwnershipAsync(HttpContext, req.BranchId, uow, ct);
+
+        // Validate tên court không trùng trong cùng branch
+        if (await uow.Courts.AnyAsync(c => c.BranchId == req.BranchId
+                && c.Name.ToLower() == req.Name.ToLower(), ct))
+            throw new ConflictException($"Sân '{req.Name}' đã tồn tại trong chi nhánh này.");
 
         var court = new Court
         {
@@ -136,23 +165,31 @@ public class CourtController(IUnitOfWork uow) : ControllerBase
 
         await uow.Courts.AddAsync(court, ct);
         await uow.SaveChangesAsync(ct);
-        return CreatedAtAction(nameof(GetById), new { id = court.CourtId }, new { court.CourtId });
+
+        logger.LogInformation("User {UserId} created court '{Name}' in branch {BranchId}",
+            HttpContext.GetUserId(), court.Name, req.BranchId);
+
+        return CreatedAtAction(nameof(GetById), new { id = court.CourtId },
+            new { court.CourtId, court.Name, court.BranchId });
     }
+
+    // ── Update ───────────────────────────────────────────────────────────
 
     [HttpPut("{id:guid}")]
     [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.PartnerAdmin},{Roles.BranchManager}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateCourtRequest req, CancellationToken ct)
     {
-        var court = await uow.Courts.Query()
-            .Include(c => c.Branch)
-            .FirstOrDefaultAsync(c => c.CourtId == id, ct);
-        if (court is null) return NotFound();
+        if (req.BasePrice <= 0)
+            return BadRequest(new { error = "BasePrice phải lớn hơn 0." });
 
-        var role = HttpContext.GetRole();
-        if (role == Roles.PartnerAdmin && court.Branch.PartnerId != HttpContext.GetPartnerId())
-            return Forbid();
-        if (role == Roles.BranchManager && court.BranchId != HttpContext.GetBranchId())
-            return Forbid();
+        // TenantGuard xác thực chain court → branch → partner
+        var court = await TenantGuard.RequireCourtAccessAsync(HttpContext, id, uow, ct);
+
+        // Validate tên không trùng trong cùng branch (bỏ qua chính nó)
+        if (await uow.Courts.AnyAsync(c => c.BranchId == court.BranchId
+                && c.CourtId != id
+                && c.Name.ToLower() == req.Name.ToLower(), ct))
+            throw new ConflictException($"Sân '{req.Name}' đã tồn tại trong chi nhánh này.");
 
         court.Name        = req.Name;
         court.Description = req.Description;
@@ -163,43 +200,82 @@ public class CourtController(IUnitOfWork uow) : ControllerBase
 
         uow.Courts.Update(court);
         await uow.SaveChangesAsync(ct);
+
+        logger.LogInformation("User {UserId} updated court {CourtId}",
+            HttpContext.GetUserId(), id);
+
         return NoContent();
     }
 
-    /// <summary>Staff can toggle court status (Active ↔ Maintenance).</summary>
+    // ── Delete ───────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Soft-delete: chuyển Status → Inactive.
+    /// Không xóa hẳn để giữ lịch sử booking.
+    /// </summary>
+    [HttpDelete("{id:guid}")]
+    [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.PartnerAdmin},{Roles.BranchManager}")]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+    {
+        var court = await TenantGuard.RequireCourtAccessAsync(HttpContext, id, uow, ct);
+
+        // BranchManager chỉ có thể xóa court của branch mình
+        if (HttpContext.GetRole() == Roles.BranchManager && court.BranchId != HttpContext.GetBranchId())
+            throw new ForbiddenException("Bạn chỉ có thể xóa sân trong chi nhánh của mình.");
+
+        var hasActiveBookings = await uow.Bookings.AnyAsync(
+            b => b.CourtId == id
+              && (b.Status == BookingStatus.Pending || b.Status == BookingStatus.Confirmed), ct);
+
+        if (hasActiveBookings)
+            throw new BusinessException(
+                "Không thể xóa sân đang có booking Pending/Confirmed. Hủy các booking trước.");
+
+        court.Status    = CourtStatus.Inactive;
+        court.UpdatedAt = DateTime.UtcNow;
+
+        uow.Courts.Update(court);
+        await uow.SaveChangesAsync(ct);
+
+        logger.LogInformation("User {UserId} deleted (inactivated) court {CourtId} '{Name}'",
+            HttpContext.GetUserId(), id, court.Name);
+
+        return NoContent();
+    }
+
+    // ── Status toggle ────────────────────────────────────────────────────
+
     [HttpPatch("{id:guid}/status")]
     [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.PartnerAdmin},{Roles.BranchManager},{Roles.Staff}")]
     public async Task<IActionResult> SetStatus(Guid id, [FromBody] SetCourtStatusRequest req, CancellationToken ct)
     {
-        var court = await uow.Courts.Query()
-            .Include(c => c.Branch)
-            .FirstOrDefaultAsync(c => c.CourtId == id, ct);
-        if (court is null) return NotFound();
-
-        var role = HttpContext.GetRole();
-        if (role is Roles.Staff or Roles.BranchManager && court.BranchId != HttpContext.GetBranchId())
-            return Forbid();
+        var court = await TenantGuard.RequireCourtAccessAsync(HttpContext, id, uow, ct);
 
         court.Status    = req.Status;
         court.UpdatedAt = DateTime.UtcNow;
+
         uow.Courts.Update(court);
         await uow.SaveChangesAsync(ct);
+
         return NoContent();
     }
 
-    /// <summary>Add an image to a court (after upload via /api/upload).</summary>
+    // ── Images ───────────────────────────────────────────────────────────
+
     [HttpPost("{id:guid}/images")]
     [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.PartnerAdmin},{Roles.BranchManager}")]
     public async Task<IActionResult> AddImage(Guid id, [FromBody] AddCourtImageRequest req, CancellationToken ct)
     {
-        var court = await uow.Courts.GetByIdAsync(id, ct);
-        if (court is null) return NotFound();
+        await TenantGuard.RequireCourtAccessAsync(HttpContext, id, uow, ct);
 
-        // If this is set as primary, clear other primaries
         if (req.IsPrimary)
         {
-            var existingImages = await uow.CourtImages.FindAsync(i => i.CourtId == id && i.IsPrimary, ct);
-            foreach (var img in existingImages) { img.IsPrimary = false; uow.CourtImages.Update(img); }
+            var existingPrimaries = await uow.CourtImages.FindAsync(i => i.CourtId == id && i.IsPrimary, ct);
+            foreach (var img in existingPrimaries)
+            {
+                img.IsPrimary = false;
+                uow.CourtImages.Update(img);
+            }
         }
 
         var image = new CourtImage
@@ -210,23 +286,31 @@ public class CourtController(IUnitOfWork uow) : ControllerBase
             IsPrimary = req.IsPrimary,
             SortOrder = req.SortOrder,
         };
+
         await uow.CourtImages.AddAsync(image, ct);
         await uow.SaveChangesAsync(ct);
+
         return Ok(new { image.CourtImageId, image.Url, image.IsPrimary });
     }
 
-    /// <summary>Remove a court image.</summary>
     [HttpDelete("{id:guid}/images/{imageId:int}")]
     [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.PartnerAdmin},{Roles.BranchManager}")]
     public async Task<IActionResult> RemoveImage(Guid id, int imageId, CancellationToken ct)
     {
-        var image = await uow.CourtImages.FirstOrDefaultAsync(i => i.CourtImageId == imageId && i.CourtId == id, ct);
-        if (image is null) return NotFound();
+        await TenantGuard.RequireCourtAccessAsync(HttpContext, id, uow, ct);
+
+        var image = await uow.CourtImages.FirstOrDefaultAsync(
+            i => i.CourtImageId == imageId && i.CourtId == id, ct)
+            ?? throw new NotFoundException($"Ảnh {imageId} không tồn tại.");
+
         uow.CourtImages.Remove(image);
         await uow.SaveChangesAsync(ct);
+
         return NoContent();
     }
 }
+
+// ── Request Records ──────────────────────────────────────────────────────────
 
 public record CreateCourtRequest(
     Guid BranchId,

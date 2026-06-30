@@ -1,5 +1,4 @@
 using System.IdentityModel.Tokens.Jwt;
-using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -7,13 +6,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using SportSG.Application.DTOs.Auth;
+using SportSG.Application.Interfaces;
 using SportSG.Domain.Entities;
 using SportSG.Domain.Enums;
 using SportSG.Application.Repositories;
 
 namespace SportSG.Application.Services;
 
-public class AuthService(IUnitOfWork uow, IConfiguration cfg) : IAuthService
+public class AuthService(IUnitOfWork uow, IConfiguration cfg, IGoogleAuthProvider googleAuth) : IAuthService
 {
     // ── Register ────────────────────────────────────────────────
 
@@ -59,34 +59,67 @@ public class AuthService(IUnitOfWork uow, IConfiguration cfg) : IAuthService
         return await BuildAuthResponseAsync(user, role, partnerId, branchId, ct);
     }
 
-    // ── Google Login ────────────────────────────────────────────
+    // ── Google Login (id_token từ frontend) ────────────────────────
 
+    /// <summary>
+    /// Dùng khi frontend tự lấy id_token qua Google Identity Services / One Tap
+    /// rồi gửi lên backend để verify và đổi lấy JWT hệ thống.
+    /// </summary>
     public async Task<AuthResponse> GoogleLoginAsync(GoogleLoginRequest req, CancellationToken ct = default)
     {
-        // Validate Google ID token via Google tokeninfo endpoint
-        using var http = new HttpClient();
-        var resp = await http.GetAsync(
-            $"https://oauth2.googleapis.com/tokeninfo?id_token={req.IdToken}", ct);
-        if (!resp.IsSuccessStatusCode)
-            throw new UnauthorizedAccessException("Google token không hợp lệ.");
+        var info = await googleAuth.ValidateIdTokenAsync(req.IdToken, ct);
+        return await FindOrCreateGoogleUserAsync(info, ct);
+    }
 
-        var payload = await resp.Content.ReadFromJsonAsync<GoogleTokenPayload>(cancellationToken: ct)
-            ?? throw new UnauthorizedAccessException("Không đọc được Google token.");
+    // ── Google Callback (server-side OAuth flow) ────────────────────
 
-        var user = await uow.Users.FirstOrDefaultAsync(u => u.GoogleId == payload.Sub || u.Email == payload.Email, ct);
+    /// <summary>
+    /// Dùng khi backend nhận authorization code từ Google redirect callback,
+    /// đổi code lấy tokens, trích xuất thông tin user và trả về JWT hệ thống.
+    /// </summary>
+    public async Task<AuthResponse> GoogleCallbackAsync(
+        string code, string redirectUri, CancellationToken ct = default)
+    {
+        var info = await googleAuth.ExchangeCodeAsync(code, redirectUri, ct);
+        return await FindOrCreateGoogleUserAsync(info, ct);
+    }
+
+    // ── Shared: find or create user from Google info ────────────────
+
+    private async Task<AuthResponse> FindOrCreateGoogleUserAsync(GoogleUserInfo info, CancellationToken ct)
+    {
+        var user = await uow.Users.FirstOrDefaultAsync(
+            u => u.GoogleId == info.Sub || u.Email == info.Email.ToLower(), ct);
+
         if (user is null)
         {
             user = new User
             {
-                Email     = payload.Email,
-                GoogleId  = payload.Sub,
-                FirstName = payload.GivenName,
-                LastName  = payload.FamilyName,
-                AvatarUrl = payload.Picture,
-                IsEmailVerified = true,
+                Email           = info.Email.ToLower(),
+                GoogleId        = info.Sub,
+                FirstName       = info.GivenName ?? info.Email.Split('@')[0],
+                LastName        = info.FamilyName ?? "",
+                AvatarUrl       = info.Picture,
+                IsEmailVerified = info.EmailVerified,
+                IsActive        = true,
             };
             await uow.Users.AddAsync(user, ct);
             await uow.SaveChangesAsync(ct);
+        }
+        else
+        {
+            // Sync GoogleId nếu user đã đăng ký bằng email trước đó
+            if (string.IsNullOrEmpty(user.GoogleId))
+            {
+                user.GoogleId        = info.Sub;
+                user.IsEmailVerified = true;
+                if (string.IsNullOrEmpty(user.AvatarUrl)) user.AvatarUrl = info.Picture;
+                uow.Users.Update(user);
+                await uow.SaveChangesAsync(ct);
+            }
+
+            if (!user.IsActive)
+                throw new UnauthorizedAccessException("Tài khoản đã bị khóa.");
         }
 
         var (role, partnerId, branchId) = await GetPrimaryRoleAsync(user.UserId, ct);
@@ -197,8 +230,3 @@ public class AuthService(IUnitOfWork uow, IConfiguration cfg) : IAuthService
         => BCrypt.Net.BCrypt.Verify(password, hash);
 }
 
-// ── Google token payload ─────────────────────────────────────
-
-internal record GoogleTokenPayload(
-    string Sub, string Email,
-    string? GivenName, string? FamilyName, string? Picture);

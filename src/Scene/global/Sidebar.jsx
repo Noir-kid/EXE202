@@ -20,6 +20,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined';
 import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
+import HandshakeOutlinedIcon from '@mui/icons-material/HandshakeOutlined';
 
 import logo from '../../Assets/logo.svg';
 
@@ -142,6 +143,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                         <div className="sg-nav-section">
                             {!collapsed && <div className="sg-nav-section-title">Quản lý</div>}
                             <NavItem to="/admin/user" icon={<PeopleOutlinedIcon sx={{ fontSize: 19 }} />} label="Người dùng" collapsed={collapsed} />
+                            <NavItem to="/admin/partner" icon={<HandshakeOutlinedIcon sx={{ fontSize: 19 }} />} label="Đối tác" collapsed={collapsed} />
                             <NavItem to="/admin/branch" icon={<ContactsOutlinedIcon sx={{ fontSize: 19 }} />} label="Chi nhánh" collapsed={collapsed} />
                             <NavItem to="/admin/court" icon={<ReceiptOutlinedIcon sx={{ fontSize: 19 }} />} label="Sân thể thao" collapsed={collapsed} />
                         </div>

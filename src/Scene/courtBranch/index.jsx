@@ -27,6 +27,7 @@ const Branch = () => {
     const canEdit = ['SuperAdmin','PartnerAdmin'].includes(myRole);
 
     const [rows, setRows]         = useState([]);
+    const [partners, setPartners] = useState([]);
     const [openEdit, setOpenEdit] = useState(false);
     const [openAdd,  setOpenAdd]  = useState(false);
     const [selected, setSelected] = useState(null);
@@ -34,7 +35,7 @@ const Branch = () => {
     const [uploading,setUploading]= useState(false);
     const [preview,  setPreview]  = useState('');
 
-    const blank = { name:'', address:'', city:'', phone:'', email:'', mapUrl:'', openTime:'', closeTime:'', status:'Active' };
+    const blank = { name:'', address:'', city:'', phone:'', email:'', mapUrl:'', openTime:'', closeTime:'', status:'Active', partnerId:'' };
     const [form, setForm] = useState(blank);
 
     const dgSx = {
@@ -60,8 +61,17 @@ const Branch = () => {
         } catch (e) { console.error(e); }
     };
 
+    const fetchPartners = async () => {
+        if (myRole !== 'SuperAdmin') return;
+        try {
+            const res = await fetchWithAuth(`${API_BASE}/partners?status=1`); // status=1 = Active
+            if (res.ok) setPartners(await res.json());
+        } catch (e) { console.error(e); }
+    };
+
     useEffect(() => {
         fetchData();
+        fetchPartners();
         const id = setInterval(fetchData, 30000);
         return () => clearInterval(id);
     }, []);
@@ -80,32 +90,35 @@ const Branch = () => {
     const handleSave = async () => {
         if (!selected) return;
         try {
-            let imageUrl = selected.imageUrl;
-            if (imgFile) imageUrl = await uploadImg(imgFile);
             const body = {
-                name: form.name, address: form.address, phone: form.phone,
+                name: form.name, address: form.address, phone: form.phone, email: form.email,
                 status: form.status, openTime: form.openTime||null, closeTime: form.closeTime||null,
             };
             const res = await fetchWithAuth(`${API_BASE}/branches/${selected.branchId}`, {
                 method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body),
             });
             if (res.ok) { toast.success('Cập nhật thành công!'); setOpenEdit(false); fetchData(); }
-            else toast.error('Cập nhật thất bại.');
+            else { const err = await res.json().catch(() => ({})); toast.error(err.error || 'Cập nhật thất bại.'); }
         } catch { toast.error('Lỗi kết nối.'); }
     };
 
     const handleAdd = async () => {
         if (!form.name) { toast.warning('Vui lòng nhập tên chi nhánh.'); return; }
+        if (myRole === 'SuperAdmin' && !form.partnerId) { toast.warning('Vui lòng chọn đối tác.'); return; }
         try {
-            let imageUrl = '';
-            if (imgFile) imageUrl = await uploadImg(imgFile);
             const decoded2 = jwtDecode(sessionStorage.getItem('token'));
-            const body = { ...form, imageUrl, partnerId: decoded2.partnerId };
+            const partnerId = myRole === 'SuperAdmin' ? form.partnerId : decoded2.partnerId;
+            const body = {
+                partnerId,
+                name: form.name, address: form.address, city: form.city,
+                phone: form.phone, email: form.email, mapUrl: form.mapUrl,
+                openTime: form.openTime||null, closeTime: form.closeTime||null,
+            };
             const res = await fetchWithAuth(`${API_BASE}/branches`, {
                 method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body),
             });
             if (res.ok) { toast.success('Thêm chi nhánh thành công!'); setOpenAdd(false); fetchData(); }
-            else toast.error('Thêm thất bại.');
+            else { const err = await res.json().catch(() => ({})); toast.error(err.error || 'Thêm thất bại.'); }
         } catch { toast.error('Lỗi kết nối.'); }
     };
 
@@ -205,6 +218,15 @@ const Branch = () => {
             <Dialog open={openAdd} onClose={() => setOpenAdd(false)} maxWidth="sm" fullWidth>
                 <DialogTitle>Thêm chi nhánh mới</DialogTitle>
                 <DialogContent dividers>
+                    {myRole === 'SuperAdmin' && (
+                        <FormControl fullWidth size="small" sx={{mb:1.5}}>
+                            <InputLabel>Đối tác *</InputLabel>
+                            <Select value={form.partnerId||''} label="Đối tác *"
+                                onChange={e => setForm(p=>({...p,partnerId:e.target.value}))}>
+                                {partners.map(p => <MenuItem key={p.partnerId} value={p.partnerId}>{p.name}</MenuItem>)}
+                            </Select>
+                        </FormControl>
+                    )}
                     <FieldRow label="Tên chi nhánh" field="name"/>
                     <FieldRow label="Địa chỉ" field="address"/>
                     <Box display="flex" gap={1}><FieldRow label="Thành phố" field="city" half/><FieldRow label="SĐT" field="phone" half/></Box>

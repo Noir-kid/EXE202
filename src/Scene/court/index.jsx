@@ -44,7 +44,7 @@ const Court = () => {
     const [imgFiles, setImgFiles]   = useState([]);
     const [uploading,setUploading]  = useState(false);
 
-    const blankForm = { name:'', branchId:'', sportTypeId:1, description:'', basePrice:'', imageUrls:'' };
+    const blankForm = { name:'', branchId:'', sportTypeId:1, description:'', basePrice:'' };
     const [form, setForm] = useState(blankForm);
 
     const dgSx = {
@@ -72,61 +72,95 @@ const Court = () => {
         return () => clearInterval(id);
     }, []);
 
-    const uploadImages = async () => {
-        if (!imgFiles.length) return null;
-        setUploading(true);
-        const urls = [];
-        for (const file of imgFiles) {
-            const r = ref(imageDb, `files/${v4()}`);
-            await uploadBytes(r, file);
-            urls.push(await getDownloadURL(r));
+    const showBeError = async (res, fallback) => {
+        try {
+            const json = await res.json();
+            toast.error(json.error || json.title || json.message || fallback);
+        } catch {
+            toast.error(fallback);
         }
-        setUploading(false);
-        return urls.join('|');
     };
 
     const handleSave = async () => {
         if (!selected) return;
+        if (!selected.name)                              { toast.warning('Tên sân không được trống.'); return; }
+        if (!selected.basePrice || parseFloat(selected.basePrice) <= 0) { toast.warning('Giá phải lớn hơn 0.'); return; }
         try {
-            const uploaded = await uploadImages();
             const body = {
                 name:        selected.name,
-                description: selected.description,
+                description: selected.description || null,
                 basePrice:   parseFloat(selected.basePrice),
-                imageUrls:   uploaded || selected.imageUrls,
+                capacity:    selected.capacity ? parseInt(selected.capacity) : null,
                 status:      selected.status,
             };
             const res = await fetchWithAuth(`${API_BASE}/courts/${selected.courtId}`, {
                 method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body),
             });
-            if (res.ok) { toast.success('Cập nhật sân thành công!'); setOpenEdit(false); fetchData(); }
-            else toast.error('Cập nhật thất bại.');
-        } catch { toast.error('Lỗi kết nối.'); }
+            if (!res.ok) { await showBeError(res, 'Cập nhật thất bại.'); return; }
+
+            // Upload ảnh mới qua endpoint riêng
+            if (imgFiles.length > 0) {
+                setUploading(true);
+                for (let i = 0; i < imgFiles.length; i++) {
+                    const r = ref(imageDb, `files/${v4()}`);
+                    await uploadBytes(r, imgFiles[i]);
+                    const url = await getDownloadURL(r);
+                    await fetchWithAuth(`${API_BASE}/courts/${selected.courtId}/images`, {
+                        method:'POST', headers:{'Content-Type':'application/json'},
+                        body: JSON.stringify({ url, isPrimary: i === 0 && !selected.imageUrl, sortOrder: i }),
+                    });
+                }
+                setUploading(false);
+            }
+
+            toast.success('Cập nhật sân thành công!');
+            setOpenEdit(false);
+            fetchData();
+        } catch { setUploading(false); toast.error('Lỗi kết nối.'); }
     };
 
     const handleAdd = async () => {
-        if (!form.branchId) { toast.warning('Vui lòng chọn chi nhánh.'); return; }
-        if (!form.name)     { toast.warning('Vui lòng nhập tên sân.'); return; }
+        if (!form.branchId)                              { toast.warning('Vui lòng chọn chi nhánh.'); return; }
+        if (!form.name)                                  { toast.warning('Vui lòng nhập tên sân.'); return; }
+        if (!form.basePrice || parseFloat(form.basePrice) <= 0) { toast.warning('Giá phải lớn hơn 0.'); return; }
         try {
-            const uploaded = await uploadImages();
             const body = {
-                branchId:    form.branchId,
-                sportTypeId: form.sportTypeId,
+                branchId:    form.branchId,                         // UUID string → Guid
+                sportTypeId: parseInt(form.sportTypeId, 10),        // int
                 name:        form.name,
-                description: form.description,
-                imageUrls:   uploaded || '',
-                basePrice:   parseFloat(form.basePrice)||0,
+                description: form.description || null,
+                basePrice:   parseFloat(form.basePrice),            // decimal
             };
             const res = await fetchWithAuth(`${API_BASE}/courts`, {
                 method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body),
             });
-            if (res.ok) { toast.success('Thêm sân thành công!'); setOpenAdd(false); setForm(blankForm); setImgFiles([]); fetchData(); }
-            else toast.error('Thêm sân thất bại.');
-        } catch { toast.error('Lỗi kết nối.'); }
+            if (!res.ok) { await showBeError(res, 'Thêm sân thất bại.'); return; }
+
+            // Đọc courtId từ response 201 để upload ảnh
+            const created = await res.json();
+            const courtId = created.courtId;
+
+            if (imgFiles.length > 0) {
+                setUploading(true);
+                for (let i = 0; i < imgFiles.length; i++) {
+                    const r = ref(imageDb, `files/${v4()}`);
+                    await uploadBytes(r, imgFiles[i]);
+                    const url = await getDownloadURL(r);
+                    await fetchWithAuth(`${API_BASE}/courts/${courtId}/images`, {
+                        method:'POST', headers:{'Content-Type':'application/json'},
+                        body: JSON.stringify({ url, isPrimary: i === 0, sortOrder: i }),
+                    });
+                }
+                setUploading(false);
+            }
+
+            toast.success('Thêm sân thành công!');
+            setOpenAdd(false); setForm(blankForm); setImgFiles([]); fetchData();
+        } catch { setUploading(false); toast.error('Lỗi kết nối.'); }
     };
 
     const handleStatusToggle = async (row) => {
-        const next = row.status === 'Active' ? 'Maintenance' : 'Active';
+        const next = row.status === 'Active' ? 'Maintenance' : row.status === 'Maintenance' ? 'Active' : 'Active';
         try {
             const res = await fetchWithAuth(`${API_BASE}/courts/${row.courtId}/status`, {
                 method:'PATCH', headers:{'Content-Type':'application/json'},
@@ -136,18 +170,13 @@ const Court = () => {
         } catch { toast.error('Thao tác thất bại.'); }
     };
 
-    const firstImg = (s) => s ? s.split('|')[0] : null;
-
     const columns = [
         { field:'id', headerName:'STT', width:60 },
         {
-            field:'imageUrls', headerName:'Ảnh', width:80,
-            renderCell:({value}) => {
-                const src = firstImg(value);
-                return src
-                    ? <img src={src} alt="" style={{width:60,height:42,objectFit:'cover',borderRadius:4}}/>
-                    : <ImageOutlinedIcon sx={{color:'#9ca3af'}}/>;
-            },
+            field:'imageUrl', headerName:'Ảnh', width:80,
+            renderCell:({value}) => value
+                ? <img src={value} alt="" style={{width:60,height:42,objectFit:'cover',borderRadius:4}}/>
+                : <ImageOutlinedIcon sx={{color:'#9ca3af'}}/>,
         },
         { field:'name', headerName:'Tên sân', flex:1 },
         { field:'sportName', headerName:'Môn thể thao', width:130 },
@@ -221,8 +250,8 @@ const Court = () => {
                                     <MenuItem value="Inactive">Vô hiệu</MenuItem>
                                 </Select>
                             </FormControl>
-                            {firstImg(selected.imageUrls) && (
-                                <img src={firstImg(selected.imageUrls)} alt="" style={{maxHeight:100,objectFit:'cover',borderRadius:6}}/>
+                            {selected.imageUrl && (
+                                <img src={selected.imageUrl} alt="" style={{maxHeight:100,objectFit:'cover',borderRadius:6}}/>
                             )}
                             <Button component="label" variant="outlined" size="small" startIcon={<ImageOutlinedIcon/>}>
                                 {uploading ? 'Đang tải...' : 'Chọn ảnh mới'}

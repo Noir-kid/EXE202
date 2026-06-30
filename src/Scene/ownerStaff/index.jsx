@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     Box, Button, Chip, Dialog, DialogTitle, DialogContent, DialogActions,
-    TextField,
+    TextField, FormControl, InputLabel, Select, MenuItem,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { useTheme } from '@mui/material';
@@ -22,9 +22,10 @@ const OwnerStaff = () => {
     const decoded = token ? jwtDecode(token) : {};
     const myRole  = decoded.role || '';
 
-    const [rows, setRows]     = useState([]);
+    const [rows, setRows]       = useState([]);
+    const [branches, setBranches] = useState([]);
     const [openAdd, setOpenAdd] = useState(false);
-    const blankForm = { email:'', password:'', firstName:'', lastName:'', phone:'' };
+    const blankForm = { email:'', password:'', firstName:'', lastName:'', phone:'', branchId:'' };
     const [form, setForm] = useState(blankForm);
 
     const dgSx = {
@@ -41,7 +42,6 @@ const OwnerStaff = () => {
             const res  = await fetchWithAuth(`${API_BASE}/users`);
             if (!res.ok) return;
             const data = await res.json();
-            // Filter to show only Staff (not PartnerAdmin/BranchManager) unless SuperAdmin
             const staff = myRole === 'SuperAdmin'
                 ? data
                 : data.filter(u => u.roleCode === 'Staff' || u.roleCode === 'BranchManager');
@@ -49,8 +49,16 @@ const OwnerStaff = () => {
         } catch (err) { console.error(err); }
     };
 
+    const fetchBranches = async () => {
+        try {
+            const res = await fetchWithAuth(`${API_BASE}/branches/manage`);
+            if (res.ok) setBranches(await res.json());
+        } catch (e) { console.error(e); }
+    };
+
     useEffect(() => {
         fetchStaff();
+        fetchBranches();
         const id = setInterval(fetchStaff, 30000);
         return () => clearInterval(id);
     }, []);
@@ -60,17 +68,18 @@ const OwnerStaff = () => {
             toast.warning('Email và mật khẩu không được để trống.'); return;
         }
         try {
+            const body = {
+                email:     form.email,
+                password:  form.password,
+                firstName: form.firstName,
+                lastName:  form.lastName,
+                phone:     form.phone,
+            };
+            if (form.branchId) body.branchId = form.branchId;
+
             const res = await fetchWithAuth(`${API_BASE}/users/staff`, {
                 method:'POST', headers:{'Content-Type':'application/json'},
-                body: JSON.stringify({
-                    email:     form.email,
-                    password:  form.password,
-                    firstName: form.firstName,
-                    lastName:  form.lastName,
-                    phone:     form.phone,
-                    partnerId: null,
-                    branchId:  null,
-                }),
+                body: JSON.stringify(body),
             });
             if (res.ok) {
                 toast.success('Thêm nhân viên thành công!');
@@ -150,6 +159,14 @@ const OwnerStaff = () => {
                     </Box>
                     <TextField label="Số điện thoại" value={form.phone}
                         onChange={e => setForm({...form,phone:e.target.value})} fullWidth size="small"/>
+                    <FormControl fullWidth size="small">
+                        <InputLabel>Chi nhánh</InputLabel>
+                        <Select value={form.branchId||''} label="Chi nhánh"
+                            onChange={e => setForm({...form,branchId:e.target.value})}>
+                            <MenuItem value=""><em>Không chỉ định</em></MenuItem>
+                            {branches.map(b => <MenuItem key={b.branchId} value={b.branchId}>{b.name}</MenuItem>)}
+                        </Select>
+                    </FormControl>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setOpenAdd(false)}>Hủy</Button>

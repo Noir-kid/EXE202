@@ -98,8 +98,16 @@ try
     builder.Services.AddScoped<BookingExpiryJob>();
     builder.Services.AddScoped<BookingReminderJob>();
 
-    // ── HTTP Client (Google token validation + MoMo API) ─────────
+    // ── HTTP Client (Google OAuth + MoMo API) ────────────────────
     builder.Services.AddHttpClient();
+    builder.Services.AddHttpClient("Google", c =>
+    {
+        c.DefaultRequestHeaders.Accept.Add(
+            new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+    });
+
+    // ── Google OAuth provider ─────────────────────────────────────
+    builder.Services.AddScoped<IGoogleAuthProvider, GoogleAuthProvider>();
 
     // ── SignalR ───────────────────────────────────────────────────
     builder.Services.AddSignalR(opt =>

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\SportSG-main\\src\\BE\\BusinessObj\\BusinessObj.csproj": {}
+    "D:\\EXE\\src\\BE\\BusinessObj\\BusinessObj.csproj": {}
   },
   "projects": {
-    "D:\\SportSG-main\\src\\BE\\BusinessObj\\BusinessObj.csproj": {
+    "D:\\EXE\\src\\BE\\BusinessObj\\BusinessObj.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\SportSG-main\\src\\BE\\BusinessObj\\BusinessObj.csproj",
+        "projectUniqueName": "D:\\EXE\\src\\BE\\BusinessObj\\BusinessObj.csproj",
         "projectName": "BusinessObj",
-        "projectPath": "D:\\SportSG-main\\src\\BE\\BusinessObj\\BusinessObj.csproj",
+        "projectPath": "D:\\EXE\\src\\BE\\BusinessObj\\BusinessObj.csproj",
         "packagesPath": "C:\\Users\\admin\\.nuget\\packages\\",
-        "outputPath": "D:\\SportSG-main\\src\\BE\\BusinessObj\\obj\\",
+        "outputPath": "D:\\EXE\\src\\BE\\BusinessObj\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

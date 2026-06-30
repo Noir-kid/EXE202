@@ -2962,11 +2962,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\SportSG-main\\src\\BE\\Services\\Services.csproj",
+      "projectUniqueName": "D:\\EXE\\src\\BE\\Services\\Services.csproj",
       "projectName": "Services",
-      "projectPath": "D:\\SportSG-main\\src\\BE\\Services\\Services.csproj",
+      "projectPath": "D:\\EXE\\src\\BE\\Services\\Services.csproj",
       "packagesPath": "C:\\Users\\admin\\.nuget\\packages\\",
-      "outputPath": "D:\\SportSG-main\\src\\BE\\Services\\obj\\",
+      "outputPath": "D:\\EXE\\src\\BE\\Services\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -2988,8 +2988,8 @@
           "framework": "net8.0",
           "targetAlias": "net8.0",
           "projectReferences": {
-            "D:\\SportSG-main\\src\\BE\\Repository\\Repository.csproj": {
-              "projectPath": "D:\\SportSG-main\\src\\BE\\Repository\\Repository.csproj"
+            "D:\\EXE\\src\\BE\\Repository\\Repository.csproj": {
+              "projectPath": "D:\\EXE\\src\\BE\\Repository\\Repository.csproj"
             }
           }
         }

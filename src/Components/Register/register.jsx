@@ -58,20 +58,35 @@ const Register = ({ onSwitchToLogin }) => {
         try {
             const provider = new GoogleAuthProvider();
             const result   = await signInWithPopup(auth, provider);
-            const idToken  = await result.user.getIdToken();
+
+            // Lấy Google OAuth id_token (không phải Firebase token)
+            const credential = GoogleAuthProvider.credentialFromResult(result);
+            const idToken    = credential?.idToken;
+
+            if (!idToken) {
+                toast.error('Không lấy được Google token. Vui lòng thử lại.');
+                return;
+            }
+
             const res = await fetch(`${API_BASE}/auth/google`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ idToken }),
             });
+
             if (res.ok) {
                 const data = await res.json();
                 sessionStorage.setItem('token', data.accessToken);
                 sessionStorage.setItem('user', JSON.stringify(data.user));
                 toast.success('Đăng nhập Google thành công!');
-                navigate('/home');
+                const roleToPath = {
+                    SuperAdmin: '/admin', PartnerAdmin: '/owner',
+                    BranchManager: '/owner', Staff: '/staff',
+                };
+                navigate(roleToPath[data.user?.role] || '/home');
             } else {
-                toast.error('Đăng ký Google thất bại.');
+                const err = await res.json().catch(() => ({}));
+                toast.error(err.message || err.title || 'Đăng ký Google thất bại.');
             }
         } catch (err) {
             toast.error('Lỗi: ' + err.message);

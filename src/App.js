@@ -4,7 +4,7 @@ import Navbar from './Components/Navbar/Navbar';
 import Home from './Components/Home/Home';
 import Footer from './Components/Footer/Footer';
 import Popular from './Components/Popular/Popular';
-import { Route, Routes, Navigate } from 'react-router-dom';
+import { Route, Routes, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import SignInSignUp from './Components/SigninSignUp/signinsignup';
 import ViewCourtInfo from './Components/ViewCourtInfo/viewCourtInfo';
 import ViewInfo from './Components/ViewInfo/ViewInfo';
@@ -43,6 +43,45 @@ import Pie from './Scene/pie';
 import AnimatedIcons from './Components/AnimatedIcons/animatedIcons';
 import OwnerStaff from './Scene/ownerStaff';
 import StaffBooking from './Scene/staffBooking';
+import Partner from './Scene/partner';
+
+// Handles server-side Google OAuth redirect: /auth/callback?accessToken=...&refreshToken=...
+const AuthCallback = () => {
+  const [params] = useSearchParams();
+  const navigate = useNavigate();
+  useEffect(() => {
+    const accessToken = params.get('accessToken');
+    const refreshToken = params.get('refreshToken');
+    if (accessToken) {
+      try {
+        const decoded = jwtDecode(accessToken);
+        const role = decoded.role || 'Customer';
+        sessionStorage.setItem('token', accessToken);
+        if (refreshToken) sessionStorage.setItem('refreshToken', refreshToken);
+        sessionStorage.setItem('user', JSON.stringify({ role, email: decoded.email, fullName: decoded.fullName }));
+        const path = { SuperAdmin:'/admin', PartnerAdmin:'/owner', BranchManager:'/owner', Staff:'/staff' }[role] || '/home';
+        navigate(path, { replace: true });
+      } catch {
+        navigate('/signin', { replace: true });
+      }
+    } else {
+      navigate('/signin', { replace: true });
+    }
+  }, []);
+  return <div style={{padding:40,textAlign:'center'}}>Đang xử lý đăng nhập...</div>;
+};
+
+const AuthError = () => {
+  const [params] = useSearchParams();
+  const msg = params.get('message') || 'Đã có lỗi xảy ra.';
+  return (
+    <div style={{padding:60,textAlign:'center'}}>
+      <h2>Đăng nhập thất bại</h2>
+      <p>{decodeURIComponent(msg)}</p>
+      <a href="/signin">Quay lại đăng nhập</a>
+    </div>
+  );
+};
 
 const App = () => {
   const [theme, colorMode] = useMode();
@@ -84,6 +123,8 @@ const logout = () => {
           <Route path="/findCourt" element={<><FindCourt /><AnimatedIcons/></>} />
           <Route path="/ResetPassword" element={<><ForgetPassword /></>} />
           <Route path="/verifyAccount" element={<><VerifyAccount /></>} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/auth/error"    element={<AuthError />} />
           <Route path="/bookCourt" element={<div><Header /><BookCourt /><AnimatedIcons/></div>} />
           <Route path="/buyTime" element={<div><Header /><BuyTime /><Footer /><AnimatedIcons/></div>} />
           <Route path="/paySuccess" element={<div><Header /><PaySuccess /><Footer /></div>} />
@@ -98,6 +139,7 @@ const logout = () => {
             <Route path="" element={<Navigate to="dashboard" />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="user" element={<User />} />
+            <Route path="partner" element={<Partner />} />
             <Route path="branch" element={<Branch />} />
             <Route path="court" element={<Court />} />
             <Route path="discount" element={<Discount />} />

@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SportSG.Application.DTOs.Dashboard;
 using SportSG.Domain.Enums;
 using SportSG.Application.Repositories;
+using SportSG.Domain.Entities;
 
 namespace SportSG.Application.Services;
 
@@ -168,6 +169,139 @@ public class DashboardService(IUnitOfWork uow) : IDashboardService
         return new BranchManagerDashboard(
             revenueToday, revenueMonth, todayBookings, pending, confirmed, checkedIn,
             occupancy, Math.Round(avgRating, 1), courtStatuses, upcoming);
+    }
+
+    // ── Revenue Report: SuperAdmin ────────────────────────────────────────
+
+    public async Task<RevenueReport> GetRevenueReportAsync(CancellationToken ct = default)
+    {
+        var today    = DateOnly.FromDateTime(DateTime.UtcNow);
+        var since30  = today.AddDays(-29).ToDateTime(TimeOnly.MinValue);
+
+        var totalPartners = await uow.Partners.CountAsync(p => p.Status == PartnerStatus.Active, ct);
+        var totalBranches = await uow.Branches.CountAsync(b => b.Status == BranchStatus.Active, ct);
+        var totalCourts   = await uow.Courts.CountAsync(c => c.Status == CourtStatus.Active, ct);
+        var totalBookings = await uow.Bookings.CountAsync(null, ct);
+
+        var payments = await uow.Payments.Query()
+            .Where(p => p.Status == PaymentStatus.Success)
+            .Select(p => new { p.PaidAt, p.Amount })
+            .ToListAsync(ct);
+
+        var totalRevenue     = payments.Sum(p => p.Amount);
+        var commissionEarned = await uow.CommissionLedger.Query().SumAsync(c => c.CommissionAmt, ct);
+
+        var revenueChart = payments
+            .Where(p => p.PaidAt.HasValue && p.PaidAt.Value >= since30)
+            .GroupBy(p => DateOnly.FromDateTime(p.PaidAt!.Value))
+            .Select(g => new RevenueByDay(g.Key, g.Sum(p => p.Amount), g.Count()))
+            .OrderBy(r => r.Date)
+            .ToList();
+
+        // Revenue breakdown per partner
+        var ledgerRows = await uow.CommissionLedger.Query()
+            .Select(c => new {
+                c.PartnerId,
+                PartnerName    = c.Partner.Name,
+                c.GrossAmount,
+                c.CommissionAmt,
+                c.NetAmount,
+            })
+            .ToListAsync(ct);
+
+        // EF Core auto-joins via navigation property — no explicit Include needed in GroupBy
+        var partnerBookingCounts = await uow.Bookings.Query()
+            .GroupBy(b => b.Court.Branch.PartnerId)
+            .Select(g => new { PartnerId = g.Key, Count = g.Count() })
+            .ToListAsync(ct);
+
+        var partnerBranchCounts = await uow.Branches.Query()
+            .GroupBy(b => b.PartnerId)
+            .Select(g => new { PartnerId = g.Key, Count = g.Count() })
+            .ToListAsync(ct);
+
+        var partnerCourtCounts = await uow.Courts.Query()
+            .GroupBy(c => c.Branch.PartnerId)
+            .Select(g => new { PartnerId = g.Key, Count = g.Count() })
+            .ToListAsync(ct);
+
+        var revenueByPartner = ledgerRows
+            .GroupBy(r => new { r.PartnerId, r.PartnerName })
+            .Select(g => new PartnerRevenueItem(
+                g.Key.PartnerId,
+                g.Key.PartnerName,
+                g.Sum(r => r.GrossAmount),
+                g.Sum(r => r.CommissionAmt),
+                g.Sum(r => r.NetAmount),
+                partnerBookingCounts.FirstOrDefault(x => x.PartnerId == g.Key.PartnerId)?.Count ?? 0,
+                partnerBranchCounts.FirstOrDefault(x => x.PartnerId == g.Key.PartnerId)?.Count ?? 0,
+                partnerCourtCounts.FirstOrDefault(x => x.PartnerId == g.Key.PartnerId)?.Count ?? 0))
+            .OrderByDescending(x => x.GrossRevenue)
+            .ToList();
+
+        return new RevenueReport(
+            totalRevenue, commissionEarned,
+            totalBookings, totalPartners, totalBranches, totalCourts,
+            revenueChart, revenueByPartner);
+    }
+
+    // ── Revenue Report: PartnerAdmin ──────────────────────────────────────
+
+    public async Task<PartnerRevenueReport> GetPartnerRevenueReportAsync(
+        Guid partnerId, CancellationToken ct = default)
+    {
+        var today        = DateOnly.FromDateTime(DateTime.UtcNow);
+        var since30      = today.AddDays(-29);
+
+        var partner = await uow.Partners.GetByIdAsync(partnerId, ct);
+
+        var bookings = await uow.Bookings.Query()
+            .Include(b => b.Court).ThenInclude(c => c.Branch)
+            .Where(b => b.Court.Branch.PartnerId == partnerId)
+            .Select(b => new {
+                b.BookingId, b.BookingDate, b.TotalAmount, b.Status, b.Court.BranchId, b.Court.Branch.Name
+            })
+            .ToListAsync(ct);
+
+        var successStatuses = new[] { BookingStatus.Confirmed, BookingStatus.CheckedIn, BookingStatus.CheckedOut };
+
+        var totalRevenue     = bookings.Where(b => successStatuses.Contains(b.Status)).Sum(b => b.TotalAmount);
+        var revenueThisMonth = bookings
+            .Where(b => successStatuses.Contains(b.Status)
+                     && b.BookingDate.Month == today.Month && b.BookingDate.Year == today.Year)
+            .Sum(b => b.TotalAmount);
+
+        var totalBookings     = bookings.Count;
+        var bookingsThisMonth = bookings.Count(b => b.BookingDate.Month == today.Month && b.BookingDate.Year == today.Year);
+
+        var branches = await uow.Branches.FindAsync(b => b.PartnerId == partnerId, ct);
+        var courts   = await uow.Courts.FindAsync(c => c.Branch.PartnerId == partnerId, ct);
+
+        var revenueChart = bookings
+            .Where(b => successStatuses.Contains(b.Status) && b.BookingDate >= since30)
+            .GroupBy(b => b.BookingDate)
+            .Select(g => new RevenueByDay(g.Key, g.Sum(b => b.TotalAmount), g.Count()))
+            .OrderBy(r => r.Date)
+            .ToList();
+
+        var branchBreakdown = branches.Select(br =>
+        {
+            var branchBookings = bookings.Where(b => b.BranchId == br.BranchId).ToList();
+            return new BranchSummary(
+                br.BranchId,
+                br.Name,
+                courts.Count(c => c.BranchId == br.BranchId),
+                branchBookings.Count(b => b.BookingDate == today),
+                branchBookings.Where(b => successStatuses.Contains(b.Status)).Sum(b => b.TotalAmount));
+        }).ToList();
+
+        return new PartnerRevenueReport(
+            partnerId,
+            partner?.Name ?? "",
+            totalRevenue, revenueThisMonth,
+            totalBookings, bookingsThisMonth,
+            branches.Count, courts.Count,
+            revenueChart, branchBreakdown);
     }
 
     public async Task<StaffDashboard> GetStaffAsync(Guid branchId, CancellationToken ct = default)

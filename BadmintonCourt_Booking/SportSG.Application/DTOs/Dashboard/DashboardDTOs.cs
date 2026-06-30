@@ -69,3 +69,40 @@ public record TopPartnerItem(Guid PartnerId, string Name, decimal Revenue, int B
 public record BranchSummary(Guid BranchId, string Name, int Courts, int TodayBookings, decimal Revenue);
 public record CourtStatusItem(Guid CourtId, string Name, string Status, bool IsOccupied);
 public record UpcomingBooking(Guid BookingId, string CourtName, string CustomerName, TimeOnly StartTime, TimeOnly EndTime, string Status);
+
+// ── Revenue Report ────────────────────────────────────────────────
+
+public record RevenueReport(
+    decimal TotalRevenue,
+    decimal CommissionEarned,
+    int TotalBookings,
+    int TotalPartners,
+    int TotalBranches,
+    int TotalCourts,
+    IReadOnlyList<RevenueByDay> RevenueChart,
+    IReadOnlyList<PartnerRevenueItem> RevenueByPartner
+);
+
+public record PartnerRevenueItem(
+    Guid PartnerId,
+    string PartnerName,
+    decimal GrossRevenue,
+    decimal CommissionAmt,
+    decimal NetRevenue,
+    int Bookings,
+    int Branches,
+    int Courts
+);
+
+public record PartnerRevenueReport(
+    Guid PartnerId,
+    string PartnerName,
+    decimal TotalRevenue,
+    decimal RevenueThisMonth,
+    int TotalBookings,
+    int BookingsThisMonth,
+    int TotalBranches,
+    int TotalCourts,
+    IReadOnlyList<RevenueByDay> RevenueChart,
+    IReadOnlyList<BranchSummary> BranchBreakdown
+);
