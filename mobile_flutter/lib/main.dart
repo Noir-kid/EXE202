@@ -169,7 +169,6 @@ class SportSgMobileApp extends StatelessWidget {
               ),
             ),
           ),
-          useMaterial3: true,
         ),
         home: const AppGate(),
       ),
