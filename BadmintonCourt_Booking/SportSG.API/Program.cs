@@ -198,12 +198,26 @@ try
     // ── CORS ──────────────────────────────────────────────────────
     builder.Services.AddCors(opt =>
         opt.AddPolicy("Frontend", p =>
-            p.WithOrigins(
-                "http://localhost:3000",
-                "https://yourdomain.com")
-             .AllowAnyMethod()
-             .AllowAnyHeader()
-             .AllowCredentials()));
+        {
+            if (builder.Environment.IsDevelopment())
+            {
+                p.AllowAnyOrigin()
+                 .AllowAnyMethod()
+                 .AllowAnyHeader();
+            }
+            else
+            {
+                p.WithOrigins(
+                    "http://localhost:3000",
+                    "https://localhost:3000",
+                    "https://sportsg.online",
+                    "https://www.sportsg.online",
+                    "https://yourdomain.com")
+                 .AllowAnyMethod()
+                 .AllowAnyHeader()
+                 .AllowCredentials();
+            }
+        }));
 
     // ── Controllers ───────────────────────────────────────────────
     builder.Services.AddControllers()
