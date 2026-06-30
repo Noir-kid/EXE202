@@ -280,6 +280,18 @@ try
     }
 
     app.UseHttpsRedirection();
+
+    app.Use(async (context, next) =>
+    {
+        if (context.Request.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase) &&
+            context.Request.Headers.ContainsKey("Access-Control-Request-Private-Network"))
+        {
+            context.Response.Headers["Access-Control-Allow-Private-Network"] = "true";
+        }
+
+        await next();
+    });
+
     app.UseCors("Frontend");
     app.UseRateLimiter();                // Rate limiting before auth
     app.UseAuthentication();

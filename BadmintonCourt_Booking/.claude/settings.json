@@ -6,7 +6,11 @@
       "Bash(xargs grep -l \"IGoogleAuthProvider\\\\|ValidateIdTokenAsync\")",
       "Bash(xargs grep -l \"GoogleAuthProvider\\\\|IGoogleAuth\\\\|ValidateIdToken\")",
       "Bash(xargs grep -l \"Google\\\\|IdToken\\\\|firebase\")",
-      "PowerShell(cd \"d:\\\\EXE\\\\BadmintonCourt_Booking\" ; dotnet build SportSG.API --no-restore 2>&1 | Where-Object { $_ -match \"error CS\\\\d\" })"
+      "PowerShell(cd \"d:\\\\EXE\\\\BadmintonCourt_Booking\" ; dotnet build SportSG.API --no-restore 2>&1 | Where-Object { $_ -match \"error CS\\\\d\" })",
+      "Bash(ls \"C:\\\\Users\\\\admin\\\\.claude\\\\projects\\\\d--SportSG-main-EXE202\\\\memory\\\\\" 2>/dev/null || echo \"EMPTY\")",
+      "Read(//c/Users/admin/.claude/projects/d--SportSG-main-EXE202/memory\" 2>/dev/**)",
+      "Read(//c/Users/admin/.claude/projects/d--SportSG-main-EXE202/**)",
+      "Bash(grep -rln *)"
     ],
     "additionalDirectories": [
       "d:\\EXE\\src\\Scene\\court",
@@ -16,7 +20,8 @@
       "d:\\EXE\\src\\Components\\Login",
       "d:\\EXE\\src\\Components\\Register",
       "d:\\EXE\\src\\Components\\Popular",
-      "d:\\SportSG-main\\EXE202"
+      "d:\\SportSG-main\\EXE202",
+      "d:\\SportSG-main\\EXE202\\src"
     ]
   }
 }
