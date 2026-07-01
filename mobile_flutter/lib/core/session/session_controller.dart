@@ -40,14 +40,16 @@ class SessionController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> login(String username, String password) async {
+  Future<void> login(String email, String password) async {
     final response = await apiClient.dio.post<Map<String, dynamic>>(
-      '/User/LoginAuth',
-      queryParameters: {'username': username, 'password': password},
+      '/api/auth/login',
+      data: {'email': email, 'password': password},
     );
-    final token = response.data?['token']?.toString();
+    final data = response.data ?? const {};
+    final token = (data['accessToken'] ?? data['AccessToken'] ?? data['token'])
+        ?.toString();
     if (token == null || token.isEmpty) {
-      throw Exception('Login response does not contain token');
+      throw Exception('Login response does not contain access token');
     }
     final parsed = JwtClaims.fromToken(token);
     if (parsed == null || parsed.userId.isEmpty) {
@@ -56,12 +58,16 @@ class SessionController extends ChangeNotifier {
     _token = token;
     _claims = parsed;
     await tokenStorage.saveToken(token);
-    await refreshUser();
+    final rawUser = data['user'] ?? data['User'];
+    if (rawUser is Map) {
+      _user = UserAccount.fromJson(Map<String, dynamic>.from(rawUser));
+    } else {
+      await refreshUser();
+    }
     notifyListeners();
   }
 
   Future<void> register({
-    required String username,
     required String password,
     required String firstName,
     required String lastName,
@@ -69,13 +75,12 @@ class SessionController extends ChangeNotifier {
     required String phone,
   }) async {
     await apiClient.dio.post(
-      '/User/Register',
-      queryParameters: {
-        'username': username,
-        'password': password,
+      '/api/auth/register',
+      data: {
         'firstName': firstName,
         'lastName': lastName,
         'email': email,
+        'password': password,
         'phone': phone,
       },
     );
@@ -85,8 +90,7 @@ class SessionController extends ChangeNotifier {
     final id = _claims?.userId;
     if (id == null || id.isEmpty) return;
     final response = await apiClient.dio.get<Map<String, dynamic>>(
-      '/User/GetById',
-      queryParameters: {'id': id},
+      '/api/users/me',
     );
     if (response.data != null) {
       _user = UserAccount.fromJson(response.data!);
