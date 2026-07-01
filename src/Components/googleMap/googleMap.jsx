@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE } from '../../config';
-import Header from '../Header/header';
-import Footer from '../Footer/Footer';
 import { Typography, Button } from '@mui/material';
-import { Phone, LocationOn, CheckCircle, Cancel, Margin } from '@mui/icons-material';
+import { Phone, LocationOn, CheckCircle, Cancel } from '@mui/icons-material';
 import './GoogleMap.css'; // Import the CSS file
 import { GrMapLocation } from "react-icons/gr";
 import { BsFillInfoCircleFill, BsPhoneVibrate } from "react-icons/bs";
@@ -39,9 +37,6 @@ const GoogleMap = () => {
     };
 
     const showPosition = (position) => {
-        const latitude = position.coords.latitude;
-        const longitude = position.coords.longitude;
-        // Call your API with the latitude and longitude
         fetch(`${API_BASE}/branches?city=`)
             .then(response => response.json())
             .then(data => {
@@ -200,6 +195,7 @@ const GoogleMap = () => {
                 </div>
                 <div className='googlemap-position'>
                     <iframe
+                        title={`${selectedBranch.branchName || 'Branch'} location map`}
                         src={selectedBranch.mapUrl}
                         width="600"
                         height="450"

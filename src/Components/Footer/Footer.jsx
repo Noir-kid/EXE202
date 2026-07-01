@@ -23,10 +23,10 @@ const Footer = () => {
                 <div className="sg-footer-col">
                     <h4 className="sg-footer-heading">DỊCH VỤ</h4>
                     <ul>
-                        <li><a href="#">Đặt sân bóng đá</a></li>
-                        <li><a href="#">Đặt sân cầu lông</a></li>
-                        <li><a href="#">Đặt sân Tennis</a></li>
-                        <li><a href="#">Giải đấu thể thao</a></li>
+                        <li><span>Đặt sân bóng đá</span></li>
+                        <li><span>Đặt sân cầu lông</span></li>
+                        <li><span>Đặt sân Tennis</span></li>
+                        <li><span>Giải đấu thể thao</span></li>
                     </ul>
                 </div>
 
@@ -34,9 +34,9 @@ const Footer = () => {
                 <div className="sg-footer-col">
                     <h4 className="sg-footer-heading">HỖ TRỢ</h4>
                     <ul>
-                        <li><a href="#">Trung tâm trợ giúp</a></li>
-                        <li><a href="#">Chính sách bảo mật</a></li>
-                        <li><a href="#">Điều khoản sử dụng</a></li>
+                        <li><span>Trung tâm trợ giúp</span></li>
+                        <li><span>Chính sách bảo mật</span></li>
+                        <li><span>Điều khoản sử dụng</span></li>
                         <li><Link to="/contacts">Liên hệ quảng cáo</Link></li>
                     </ul>
                 </div>

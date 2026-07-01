@@ -12,11 +12,11 @@ import { toast } from 'react-toastify';
 import { jwtDecode } from 'jwt-decode';
 import { fetchWithAuth } from '../../Components/fetchWithAuth/fetchWithAuth';
 import { API_BASE } from '../../config';
-import { v4 } from 'uuid';
-import { uploadBytes, getDownloadURL, ref } from 'firebase/storage';
-import { imageDb } from '../../Components/googleSignin/config.js';
+import { uploadImage } from '../../Components/uploadImage/uploadImage';
+import ConfirmDialog from '../../Components/ConfirmDialog/ConfirmDialog';
 import AddOutlinedIcon   from '@mui/icons-material/AddOutlined';
 import EditOutlinedIcon  from '@mui/icons-material/EditOutlined';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 import SportsOutlinedIcon from '@mui/icons-material/SportsOutlined';
@@ -57,6 +57,8 @@ const Court = () => {
     const [selected, setSelected] = useState(null);
     const [imgFiles, setImgFiles] = useState([]);
     const [uploading, setUploading] = useState(false);
+    const [deleteTarget, setDeleteTarget] = useState(null);
+    const [deleting, setDeleting] = useState(false);
 
     const blankForm = { name: '', branchId: '', sportTypeId: 1, description: '', basePrice: '' };
     const [form, setForm] = useState(blankForm);
@@ -126,9 +128,7 @@ const Court = () => {
         setUploading(true);
         try {
             for (let i = 0; i < files.length; i++) {
-                const r   = ref(imageDb, `files/${v4()}`);
-                await uploadBytes(r, files[i]);
-                const url = await getDownloadURL(r);
+                const url = await uploadImage(files[i], 'courts');
                 await fetchWithAuth(`${API_BASE}/courts/${courtId}/images`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ url, isPrimary: i === 0 && !existingHasImage, sortOrder: i }),
@@ -199,6 +199,22 @@ const Court = () => {
         } catch { toast.error('Thao tác thất bại.'); }
     };
 
+    const handleDelete = async () => {
+        if (!deleteTarget) return;
+        setDeleting(true);
+        try {
+            const res = await fetchWithAuth(`${API_BASE}/courts/${deleteTarget.courtId}`, { method: 'DELETE' });
+            if (res.ok) {
+                toast.success('Đã xóa sân.');
+                setDeleteTarget(null);
+                fetchData();
+            } else {
+                await showError(res, 'Xóa thất bại.');
+            }
+        } catch { toast.error('Lỗi kết nối.'); }
+        finally { setDeleting(false); }
+    };
+
     const columns = [
         { field: 'stt', headerName: 'STT', width: 60 },
         {
@@ -228,7 +244,7 @@ const Court = () => {
             ),
         },
         {
-            field: 'actions', headerName: '', width: canEdit ? 160 : 100, sortable: false,
+            field: 'actions', headerName: '', width: canEdit ? 260 : 100, sortable: false,
             renderCell: ({ row }) => (
                 <Box display="flex" gap={0.5} alignItems="center" height="100%">
                     {canStatus && (
@@ -244,6 +260,13 @@ const Court = () => {
                             sx={{ textTransform: 'none' }}
                             onClick={() => { setSelected({ ...row }); setImgFiles([]); setOpenEdit(true); }}>
                             Sửa
+                        </Button>
+                    )}
+                    {canEdit && row.status !== 'Inactive' && (
+                        <Button size="small" color="error" startIcon={<DeleteOutlineIcon />}
+                            sx={{ textTransform: 'none' }}
+                            onClick={() => setDeleteTarget(row)}>
+                            Xóa
                         </Button>
                     )}
                 </Box>
@@ -417,6 +440,15 @@ const Court = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
+
+            <ConfirmDialog
+                open={!!deleteTarget}
+                title="Xóa sân"
+                message={`Bạn có chắc muốn xóa sân "${deleteTarget?.name}"? Sân sẽ chuyển sang trạng thái "Vô hiệu". Không thể xóa nếu còn booking đang chờ/đã xác nhận.`}
+                loading={deleting}
+                onConfirm={handleDelete}
+                onCancel={() => setDeleteTarget(null)}
+            />
         </Box>
     );
 };

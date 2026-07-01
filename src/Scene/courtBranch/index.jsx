@@ -12,11 +12,11 @@ import { toast } from 'react-toastify';
 import { jwtDecode } from 'jwt-decode';
 import { fetchWithAuth } from '../../Components/fetchWithAuth/fetchWithAuth';
 import { API_BASE } from '../../config';
-import { v4 } from 'uuid';
-import { uploadBytes, getDownloadURL, ref } from 'firebase/storage';
-import { imageDb } from '../../Components/googleSignin/config.js';
+import { uploadImage } from '../../Components/uploadImage/uploadImage';
+import ConfirmDialog from '../../Components/ConfirmDialog/ConfirmDialog';
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
@@ -198,6 +198,8 @@ const Branch = () => {
     const [imgFile, setImgFile]     = useState(null);
     const [uploading, setUploading] = useState(false);
     const [preview, setPreview]     = useState('');
+    const [deleteTarget, setDeleteTarget] = useState(null);
+    const [deleting, setDeleting]   = useState(false);
 
     const blank = {
         name: '', address: '', city: '', phone: '', email: '',
@@ -267,15 +269,14 @@ const Branch = () => {
         fetchPartners();
         const id = setInterval(fetchData, 30000);
         return () => clearInterval(id);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const uploadImg = async (file) => {
         if (!file) return null;
         setUploading(true);
         try {
-            const r   = ref(imageDb, `files/${v4()}`);
-            await uploadBytes(r, file);
-            const url = await getDownloadURL(r);
+            const url = await uploadImage(file, 'branches');
             setUploading(false);
             return url;
         } catch {
@@ -336,6 +337,23 @@ const Branch = () => {
         } catch { toast.error('Lỗi kết nối.'); }
     };
 
+    const handleDelete = async () => {
+        if (!deleteTarget) return;
+        setDeleting(true);
+        try {
+            const res = await fetchWithAuth(`${API_BASE}/branches/${deleteTarget.branchId}`, { method: 'DELETE' });
+            if (res.ok) {
+                toast.success('Đã xóa chi nhánh.');
+                setDeleteTarget(null);
+                fetchData();
+            } else {
+                const err = await res.json().catch(() => ({}));
+                toast.error(err.error || 'Xóa thất bại.');
+            }
+        } catch { toast.error('Lỗi kết nối.'); }
+        finally { setDeleting(false); }
+    };
+
     const openEditDlg = (row) => {
         setSelected(row);
         setForm({
@@ -373,13 +391,22 @@ const Branch = () => {
             },
         },
         ...(canEdit ? [{
-            field: 'actions', headerName: '', width: 100, sortable: false,
+            field: 'actions', headerName: '', width: 170, sortable: false,
             renderCell: ({ row }) => (
-                <Button size="small" startIcon={<EditOutlinedIcon />}
-                    sx={{ textTransform: 'none', fontWeight: 500 }}
-                    onClick={() => openEditDlg(row)}>
-                    Sửa
-                </Button>
+                <Box display="flex" gap={0.5} alignItems="center" height="100%">
+                    <Button size="small" startIcon={<EditOutlinedIcon />}
+                        sx={{ textTransform: 'none', fontWeight: 500 }}
+                        onClick={() => openEditDlg(row)}>
+                        Sửa
+                    </Button>
+                    {row.status !== 'Closed' && (
+                        <Button size="small" color="error" startIcon={<DeleteOutlineIcon />}
+                            sx={{ textTransform: 'none', fontWeight: 500 }}
+                            onClick={() => setDeleteTarget(row)}>
+                            Xóa
+                        </Button>
+                    )}
+                </Box>
             ),
         }] : []),
     ];
@@ -454,6 +481,15 @@ const Branch = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
+
+            <ConfirmDialog
+                open={!!deleteTarget}
+                title="Xóa chi nhánh"
+                message={`Bạn có chắc muốn xóa chi nhánh "${deleteTarget?.name}"? Chi nhánh sẽ chuyển sang trạng thái "Đã đóng". Không thể xóa nếu còn booking đang chờ/đã xác nhận.`}
+                loading={deleting}
+                onConfirm={handleDelete}
+                onCancel={() => setDeleteTarget(null)}
+            />
         </Box>
     );
 };

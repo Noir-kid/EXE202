@@ -93,6 +93,7 @@ try
     builder.Services.AddScoped<INotificationHub, SignalRNotificationHub>();
     builder.Services.AddScoped<VnPayGateway>();
     builder.Services.AddScoped<MoMoGateway>();
+    builder.Services.AddScoped<PayOSGateway>();
 
     // ── Hangfire Jobs ─────────────────────────────────────────────
     builder.Services.AddScoped<BookingExpiryJob>();

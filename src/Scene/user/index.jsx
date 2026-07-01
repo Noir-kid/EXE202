@@ -8,6 +8,7 @@ import { toast } from 'react-toastify';
 import { jwtDecode } from 'jwt-decode';
 import { fetchWithAuth } from '../../Components/fetchWithAuth/fetchWithAuth';
 import { API_BASE } from '../../config';
+import ConfirmDialog from '../../Components/ConfirmDialog/ConfirmDialog';
 import BlockOutlinedIcon from '@mui/icons-material/BlockOutlined';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
@@ -29,6 +30,8 @@ const User = () => {
 
     const [rows, setRows]       = useState([]);
     const [loading, setLoading] = useState(true);
+    const [lockTarget, setLockTarget] = useState(null);
+    const [locking, setLocking] = useState(false);
 
     const dgSx = {
         border: 'none',
@@ -96,6 +99,24 @@ const User = () => {
         } catch { toast.error('Thao tác thất bại.'); }
     };
 
+    // Locking (deactivating) an account is the destructive action here — confirm first.
+    // Re-activating ("Mở") is reversible and safe, so it fires immediately.
+    const handleStatusClick = (row) => {
+        if (row.isActive) setLockTarget(row);
+        else toggleStatus(row.userId, row.isActive);
+    };
+
+    const handleConfirmLock = async () => {
+        if (!lockTarget) return;
+        setLocking(true);
+        try {
+            await toggleStatus(lockTarget.userId, lockTarget.isActive);
+        } finally {
+            setLocking(false);
+            setLockTarget(null);
+        }
+    };
+
     const canManage = myRole === 'SuperAdmin' || myRole === 'PartnerAdmin';
 
     const columns = [
@@ -137,7 +158,7 @@ const User = () => {
                     color={row.isActive ? 'error' : 'success'}
                     startIcon={row.isActive ? <BlockOutlinedIcon /> : <CheckCircleOutlineIcon />}
                     sx={{ textTransform: 'none', fontWeight: 500 }}
-                    onClick={() => toggleStatus(row.userId, row.isActive)}
+                    onClick={() => handleStatusClick(row)}
                 >
                     {row.isActive ? 'Khóa' : 'Mở'}
                 </Button>
@@ -160,6 +181,16 @@ const User = () => {
                     getRowClassName={p => p.indexRelativeToCurrentPage % 2 === 0 ? 'row-even' : 'row-odd'}
                 />
             </Box>
+
+            <ConfirmDialog
+                open={!!lockTarget}
+                title="Khóa tài khoản"
+                message={`Bạn có chắc muốn khóa tài khoản "${lockTarget?.email}"? Người dùng sẽ không thể đăng nhập cho đến khi được mở khóa lại.`}
+                confirmLabel="Khóa"
+                loading={locking}
+                onConfirm={handleConfirmLock}
+                onCancel={() => setLockTarget(null)}
+            />
         </Box>
     );
 };

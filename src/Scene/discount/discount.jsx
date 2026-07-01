@@ -11,6 +11,7 @@ import { toast } from 'react-toastify';
 import { jwtDecode } from 'jwt-decode';
 import { fetchWithAuth } from '../../Components/fetchWithAuth/fetchWithAuth';
 import { API_BASE } from '../../config';
+import ConfirmDialog from '../../Components/ConfirmDialog/ConfirmDialog';
 import AddOutlinedIcon   from '@mui/icons-material/AddOutlined';
 import EditOutlinedIcon  from '@mui/icons-material/EditOutlined';
 import ToggleOnOutlinedIcon  from '@mui/icons-material/ToggleOnOutlined';
@@ -36,6 +37,8 @@ const Discount = () => {
     const [openAdd,  setOpenAdd]  = useState(false);
     const [selected, setSelected] = useState(null);
     const [form,     setForm]     = useState(blankForm);
+    const [toggleTarget, setToggleTarget] = useState(null);
+    const [toggling, setToggling] = useState(false);
 
     const dgSx = {
         border: 'none',
@@ -120,6 +123,24 @@ const Discount = () => {
         } catch { toast.error('Thao tác thất bại.'); }
     };
 
+    // Turning a promotion off is the destructive/customer-facing action — confirm first.
+    // Turning it back on is safe, so it fires immediately.
+    const handleToggleClick = (row) => {
+        if (row.isActive) setToggleTarget(row);
+        else handleToggle(row.promotionId, row.isActive);
+    };
+
+    const handleConfirmToggleOff = async () => {
+        if (!toggleTarget) return;
+        setToggling(true);
+        try {
+            await handleToggle(toggleTarget.promotionId, toggleTarget.isActive);
+        } finally {
+            setToggling(false);
+            setToggleTarget(null);
+        }
+    };
+
     const columns = [
         { field:'id', headerName:'STT', width:60 },
         { field:'code', headerName:'Mã KM', width:110 },
@@ -156,7 +177,7 @@ const Discount = () => {
                         onClick={() => { setSelected({...row}); setOpenEdit(true); }}>Sửa</Button>
                     <Button size="small" color={row.isActive?'warning':'success'}
                         startIcon={row.isActive?<ToggleOffOutlinedIcon/>:<ToggleOnOutlinedIcon/>}
-                        onClick={() => handleToggle(row.promotionId, row.isActive)}>
+                        onClick={() => handleToggleClick(row)}>
                         {row.isActive?'Tắt':'Bật'}
                     </Button>
                 </Box>
@@ -248,6 +269,16 @@ const Discount = () => {
                     <Button variant="contained" onClick={handleAdd}>Thêm</Button>
                 </DialogActions>
             </Dialog>
+
+            <ConfirmDialog
+                open={!!toggleTarget}
+                title="Tắt khuyến mãi"
+                message={`Bạn có chắc muốn tắt khuyến mãi "${toggleTarget?.name}" (${toggleTarget?.code})? Khách hàng sẽ không thể áp dụng mã này nữa.`}
+                confirmLabel="Tắt"
+                loading={toggling}
+                onConfirm={handleConfirmToggleOff}
+                onCancel={() => setToggleTarget(null)}
+            />
         </Box>
     );
 };

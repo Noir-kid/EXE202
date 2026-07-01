@@ -17,6 +17,7 @@ public class PaymentController(
     IUnitOfWork uow,
     VnPayGateway vnPay,
     MoMoGateway moMo,
+    PayOSGateway payOs,
     INotificationHub hub,
     ILogger<PaymentController> logger) : ControllerBase
 {
@@ -124,6 +125,7 @@ public class PaymentController(
             {
                 PaymentMethod.VNPay => await vnPay.CreatePaymentUrlAsync(gatewayRequest, ct),
                 PaymentMethod.MoMo  => await moMo.CreatePaymentUrlAsync(gatewayRequest, ct),
+                PaymentMethod.PayOS => await payOs.CreatePaymentUrlAsync(gatewayRequest, ct),
                 _ => throw new ArgumentException($"Method {req.Method} không hỗ trợ online payment.")
             };
         }
@@ -224,6 +226,95 @@ public class PaymentController(
         await ConfirmPaymentAsync(verify.BookingId, verify.TransactionId, PaymentMethod.MoMo, verify.Amount, ct);
 
         return Ok(new { message = "OK" });
+    }
+
+    // ── PayOS Webhook ───────────────────────────────────────────────
+
+    /// <summary>
+    /// PayOS webhook — POST JSON từ server PayOS khi thanh toán thành công
+    /// (cũng được PayOS gọi 1 lần với dữ liệu giả khi bạn đăng ký webhook URL —
+    /// phải luôn trả 200 kể cả khi không tìm thấy payment tương ứng).
+    /// CHỈ hoạt động nếu webhook URL đã được khai báo trong dashboard PayOS
+    /// VÀ server public (không gọi được tới localhost) — dùng /payos/status
+    /// bên dưới làm đường xác nhận chính từ trang redirect của trình duyệt.
+    /// </summary>
+    [HttpPost("payos/callback")]
+    [AllowAnonymous]
+    public async Task<IActionResult> PayOSCallback([FromBody] System.Text.Json.JsonElement payload, CancellationToken ct)
+    {
+        var rawJson = payload.GetRawText();
+        logger.LogInformation("PayOS webhook received: {Payload}", rawJson);
+
+        PaymentVerifyResult verify;
+        try
+        {
+            verify = await payOs.VerifyCallbackAsync(new PaymentCallback(rawJson, ""), ct);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "PayOS verify error");
+            return Ok(new { success = false });
+        }
+
+        if (!verify.IsValid)
+        {
+            logger.LogWarning("PayOS signature invalid. OrderCode:{OrderCode}", verify.TransactionId);
+            return Ok(new { success = false });
+        }
+
+        var confirmed = await ConfirmPayOSByOrderCodeAsync(verify.TransactionId, verify.Amount, ct);
+        return Ok(new { success = confirmed });
+    }
+
+    /// <summary>
+    /// Xác nhận chủ động: gọi trực tiếp API PayOS để lấy trạng thái thật của
+    /// paymentLink thay vì chờ webhook (thường không tới được khi chạy local,
+    /// hoặc chưa kịp đăng ký trên dashboard). Trang PaySuccess gọi endpoint
+    /// này ngay khi PayOS redirect trình duyệt về — cùng cách VNPay IPN đã
+    /// dùng ở trên vì lý do tương tự.
+    /// </summary>
+    [HttpGet("payos/status")]
+    [AllowAnonymous]
+    public async Task<IActionResult> PayOSStatus([FromQuery] string orderCode, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(orderCode))
+            return BadRequest(new { success = false, error = "orderCode là bắt buộc." });
+
+        PaymentVerifyResult verify;
+        try
+        {
+            verify = await payOs.GetPaymentStatusAsync(orderCode, ct);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "PayOS status check error for orderCode {OrderCode}", orderCode);
+            return Ok(new { success = false });
+        }
+
+        if (!verify.IsValid) return Ok(new { success = false });
+
+        var confirmed = await ConfirmPayOSByOrderCodeAsync(orderCode, verify.Amount, ct);
+        return Ok(new { success = confirmed, amount = verify.Amount });
+    }
+
+    /// <summary>
+    /// orderCode của PayOS chỉ là số, không mã hoá được BookingId như VNPay/MoMo,
+    /// nên phải tra Payment theo TransactionRef để lấy lại BookingId.
+    /// </summary>
+    private async Task<bool> ConfirmPayOSByOrderCodeAsync(string orderCode, decimal amount, CancellationToken ct)
+    {
+        var payment = await uow.Payments.FirstOrDefaultAsync(
+            p => p.TransactionRef == orderCode && p.Method == PaymentMethod.PayOS, ct);
+
+        if (payment is null)
+        {
+            // Xảy ra với ping test khi đăng ký webhook, hoặc orderCode lạ — không phải lỗi.
+            logger.LogInformation("PayOS payment not found for orderCode {OrderCode}. Ignoring.", orderCode);
+            return false;
+        }
+
+        await ConfirmPaymentAsync(payment.BookingId, orderCode, PaymentMethod.PayOS, amount, ct);
+        return true;
     }
 
     // ── Shared: xác nhận booking sau khi payment thành công ──────

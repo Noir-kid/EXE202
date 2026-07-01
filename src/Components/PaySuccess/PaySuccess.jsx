@@ -42,6 +42,22 @@ const PaySuccess = () => {
       return;
     }
 
+    // PayOS redirect: ?code=00&id=<paymentLinkId>&cancel=false&status=PAID&orderCode=...
+    // Chủ động gọi BE để hỏi thẳng PayOS trạng thái thật + cập nhật booking,
+    // vì webhook server-to-server của PayOS không gọi tới được BE khi chạy
+    // local (localhost không public) — cùng lý do như VNPay ở trên.
+    if (params.get('orderCode') !== null) {
+      const orderCode = params.get('orderCode');
+      fetch(`${API_BASE}/payments/payos/status?orderCode=${orderCode}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setSuccess(data.success ? 1 : -1);
+          setInfo({ ref: orderCode, amount: data.amount, gateway: 'PayOS' });
+        })
+        .catch(() => setSuccess(-1));
+      return;
+    }
+
     // Fallback: ?msg=Success
     const msg = params.get('msg');
     if (msg === 'Success') setSuccess(1);

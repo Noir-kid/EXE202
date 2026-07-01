@@ -119,6 +119,9 @@ public class BranchController(IUnitOfWork uow, ILogger<BranchController> logger)
     [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.PartnerAdmin}")]
     public async Task<IActionResult> Create([FromBody] CreateBranchRequest req, CancellationToken ct)
     {
+        if (req.OpenTime.HasValue && req.CloseTime.HasValue && req.CloseTime <= req.OpenTime)
+            return BadRequest(new { error = "Giờ đóng cửa phải sau giờ mở cửa." });
+
         // Resolve target partnerId
         var callerRole = HttpContext.GetRole();
         Guid partnerId;
@@ -158,6 +161,7 @@ public class BranchController(IUnitOfWork uow, ILogger<BranchController> logger)
             Phone     = req.Phone,
             Email     = req.Email,
             MapUrl    = req.MapUrl,
+            ImageUrl  = req.ImageUrl,
             OpenTime  = req.OpenTime,
             CloseTime = req.CloseTime,
         };
@@ -178,6 +182,9 @@ public class BranchController(IUnitOfWork uow, ILogger<BranchController> logger)
     [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.PartnerAdmin},{Roles.BranchManager}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateBranchRequest req, CancellationToken ct)
     {
+        if (req.OpenTime.HasValue && req.CloseTime.HasValue && req.CloseTime <= req.OpenTime)
+            return BadRequest(new { error = "Giờ đóng cửa phải sau giờ mở cửa." });
+
         var branch = await TenantGuard.RequireBranchWriteAccessAsync(HttpContext, id, uow, ct);
 
         // Validate tên không trùng trong cùng partner (bỏ qua chính nó)
@@ -193,6 +200,7 @@ public class BranchController(IUnitOfWork uow, ILogger<BranchController> logger)
         branch.Status    = req.Status;
         branch.OpenTime  = req.OpenTime;
         branch.CloseTime = req.CloseTime;
+        if (req.ImageUrl is not null) branch.ImageUrl = req.ImageUrl;
         branch.UpdatedAt = DateTime.UtcNow;
 
         uow.Branches.Update(branch);
@@ -249,6 +257,7 @@ public record CreateBranchRequest(
     string? Phone,
     string? Email,
     string? MapUrl,
+    string? ImageUrl,
     TimeOnly? OpenTime,
     TimeOnly? CloseTime
 );
@@ -259,6 +268,7 @@ public record UpdateBranchRequest(
     string? Phone,
     string? Email,
     BranchStatus Status,
+    string? ImageUrl,
     TimeOnly? OpenTime,
     TimeOnly? CloseTime
 );

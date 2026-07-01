@@ -51,6 +51,9 @@ export default function PaymentModal({ bookingId, amount, onClose }) {
                     <button style={{ ...S.btn, ...S.btnMomo }} disabled={loading} onClick={() => initiate('MoMo')}>
                         <span style={S.btnIcon}>🟣</span> Thanh toán qua MoMo
                     </button>
+                    <button style={{ ...S.btn, ...S.btnPayos }} disabled={loading} onClick={() => initiate('PayOS')}>
+                        <span style={S.btnIcon}>🔵</span> Thanh toán qua PayOS
+                    </button>
                     <button style={{ ...S.btn, ...S.btnCash }} disabled={loading} onClick={() => initiate('Cash')}>
                         <span style={S.btnIcon}>💵</span> Thanh toán tại quầy
                     </button>
@@ -85,6 +88,7 @@ const S = {
     btnIcon: { fontSize: 18 },
     btnVnpay: { background: '#005BAA', color: '#fff' },
     btnMomo: { background: '#ae2070', color: '#fff' },
+    btnPayos: { background: '#00b4d8', color: '#fff' },
     btnCash: { background: '#f3f4f6', color: '#374151', border: '1px solid #e5e7eb' },
     loadingText: { color: '#6b7280', fontSize: 13, marginBottom: 8 },
     cancelBtn: {

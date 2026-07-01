@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import './verifyAccount.css';
 import Navbar from '../Navbar/Navbar';
-import { fetchWithAuth } from '../fetchWithAuth/fetchWithAuth';
 import { API_BASE } from '../../config';
 
 const VerifyAccount = () => {

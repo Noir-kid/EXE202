@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     Box, Button, Chip, Dialog, DialogTitle, DialogContent, DialogActions,
-    TextField, Typography, FormControl, InputLabel, Select, MenuItem, Tabs, Tab,
+    TextField, FormControl, InputLabel, Select, MenuItem, Tabs, Tab,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { useTheme } from '@mui/material';
@@ -10,6 +10,7 @@ import Head from '../../Components/Head';
 import { toast } from 'react-toastify';
 import { fetchWithAuth } from '../../Components/fetchWithAuth/fetchWithAuth';
 import { API_BASE } from '../../config';
+import ConfirmDialog from '../../Components/ConfirmDialog/ConfirmDialog';
 import AddOutlinedIcon      from '@mui/icons-material/AddOutlined';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import BlockOutlinedIcon    from '@mui/icons-material/BlockOutlined';
@@ -39,6 +40,11 @@ const Partner = () => {
     const blankAssign = { userId:'', roleCode:'PartnerAdmin', branchId:'' };
     const [assignForm, setAssignForm] = useState(blankAssign);
     const [branches,   setBranches]   = useState([]);
+
+    const [statusTarget, setStatusTarget] = useState(null); // { partner, status, title, message, confirmLabel }
+    const [statusBusy,   setStatusBusy]   = useState(false);
+    const [removeTarget, setRemoveTarget] = useState(null); // member row
+    const [removeBusy,   setRemoveBusy]   = useState(false);
 
     const dgSx = {
         border: 'none',
@@ -87,6 +93,7 @@ const Partner = () => {
         finally { setLoading(false); }
     };
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => { fetchPartners(); }, [tab]);
 
     // Create partner
@@ -119,6 +126,39 @@ const Partner = () => {
             if (res.ok) { toast.success('Cập nhật trạng thái thành công!'); fetchPartners(); }
             else { const err = await res.json().catch(() => ({})); toast.error(err.error || 'Thất bại.'); }
         } catch { toast.error('Lỗi kết nối.'); }
+    };
+
+    // Suspending ("Khóa") or rejecting ("Từ chối") a partner is destructive — confirm first.
+    // Approving / unlocking is safe and fires immediately from the grid button.
+    const handleSetStatusClick = (row, status) => {
+        if (status === 3) {
+            setStatusTarget({
+                partner: row, status,
+                title: 'Khóa đối tác',
+                message: `Bạn có chắc muốn khóa đối tác "${row.name}"? Toàn bộ chi nhánh/sân thuộc đối tác này sẽ ngừng nhận booking mới.`,
+                confirmLabel: 'Khóa',
+            });
+        } else if (status === 2) {
+            setStatusTarget({
+                partner: row, status,
+                title: 'Từ chối đối tác',
+                message: `Bạn có chắc muốn từ chối đăng ký của "${row.name}"?`,
+                confirmLabel: 'Từ chối',
+            });
+        } else {
+            handleSetStatus(row.partnerId, status);
+        }
+    };
+
+    const handleConfirmStatus = async () => {
+        if (!statusTarget) return;
+        setStatusBusy(true);
+        try {
+            await handleSetStatus(statusTarget.partner.partnerId, statusTarget.status);
+        } finally {
+            setStatusBusy(false);
+            setStatusTarget(null);
+        }
     };
 
     // Open members dialog
@@ -180,6 +220,17 @@ const Partner = () => {
         } catch { toast.error('Lỗi kết nối.'); }
     };
 
+    const handleConfirmRemoveMember = async () => {
+        if (!removeTarget) return;
+        setRemoveBusy(true);
+        try {
+            await handleRemoveMember(removeTarget.id);
+        } finally {
+            setRemoveBusy(false);
+            setRemoveTarget(null);
+        }
+    };
+
     const partnerCols = [
         { field:'id', headerName:'STT', width:60 },
         { field:'name', headerName:'Tên đối tác', flex:1.2 },
@@ -197,18 +248,18 @@ const Partner = () => {
                     {row.status === 0 && (
                         <>
                             <Button size="small" color="success" startIcon={<CheckCircleOutlineIcon/>}
-                                onClick={() => handleSetStatus(row.partnerId, 1)}>Duyệt</Button>
+                                onClick={() => handleSetStatusClick(row, 1)}>Duyệt</Button>
                             <Button size="small" color="error" startIcon={<BlockOutlinedIcon/>}
-                                onClick={() => handleSetStatus(row.partnerId, 2)}>Từ chối</Button>
+                                onClick={() => handleSetStatusClick(row, 2)}>Từ chối</Button>
                         </>
                     )}
                     {row.status === 1 && (
                         <Button size="small" color="warning" startIcon={<BlockOutlinedIcon/>}
-                            onClick={() => handleSetStatus(row.partnerId, 3)}>Khóa</Button>
+                            onClick={() => handleSetStatusClick(row, 3)}>Khóa</Button>
                     )}
                     {row.status === 3 && (
                         <Button size="small" color="success" startIcon={<CheckCircleOutlineIcon/>}
-                            onClick={() => handleSetStatus(row.partnerId, 1)}>Mở khóa</Button>
+                            onClick={() => handleSetStatusClick(row, 1)}>Mở khóa</Button>
                     )}
                     <Button size="small" startIcon={<PeopleOutlinedIcon/>}
                         onClick={() => openMembersDlg(row)}>Thành viên</Button>
@@ -225,7 +276,7 @@ const Partner = () => {
             renderCell:({value}) => value || '—' },
         { field:'removeAction', headerName:'', width:80, sortable:false,
             renderCell:({row}) => (
-                <Button size="small" color="error" onClick={() => handleRemoveMember(row.id)}>Xóa</Button>
+                <Button size="small" color="error" onClick={() => setRemoveTarget(row)}>Xóa</Button>
             ) },
     ];
 
@@ -348,6 +399,25 @@ const Partner = () => {
                     <Button variant="contained" onClick={handleAssign}>Gán</Button>
                 </DialogActions>
             </Dialog>
+
+            <ConfirmDialog
+                open={!!statusTarget}
+                title={statusTarget?.title}
+                message={statusTarget?.message}
+                confirmLabel={statusTarget?.confirmLabel}
+                loading={statusBusy}
+                onConfirm={handleConfirmStatus}
+                onCancel={() => setStatusTarget(null)}
+            />
+
+            <ConfirmDialog
+                open={!!removeTarget}
+                title="Xóa thành viên"
+                message={`Bạn có chắc muốn xóa "${removeTarget?.userName || removeTarget?.email}" khỏi đối tác này?`}
+                loading={removeBusy}
+                onConfirm={handleConfirmRemoveMember}
+                onCancel={() => setRemoveTarget(null)}
+            />
         </Box>
     );
 };

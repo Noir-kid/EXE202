@@ -67,6 +67,7 @@ const AuthCallback = () => {
     } else {
       navigate('/signin', { replace: true });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return <div style={{padding:40,textAlign:'center'}}>Đang xử lý đăng nhập...</div>;
 };
@@ -157,6 +158,7 @@ const logout = () => {
             <Route path="" element={<Navigate to="dashboard" />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="staff" element={<OwnerStaff />} />
+            <Route path="booking" element={<StaffBooking />} />
             <Route path="court" element={<Court />} />
             <Route path="timeSlot" element={<SlotManagement />} />
             <Route path="timeManage" element={<BadmintonCourtHours />} />

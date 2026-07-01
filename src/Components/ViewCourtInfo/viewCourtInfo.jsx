@@ -19,6 +19,7 @@ const ViewCourtInfo = () => {
     const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date()));
     const [currentHourIndex, setCurrentHourIndex] = useState(0);
     const [availableSlots, setAvailableSlots] = useState([]);
+    const [slotsLoading, setSlotsLoading] = useState(true);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const maxVisibleHours = 5;
 
@@ -51,7 +52,10 @@ const ViewCourtInfo = () => {
                     .filter(c => c.branchId === court.branchId && c.courtId !== court.courtId)
                     .slice(0, 2);
 
-                setMainCourt(court);
+                const detailRes = await fetch(`${API_BASE}/courts/${court.courtId}`);
+                const detail = detailRes.ok ? await detailRes.json() : null;
+
+                setMainCourt({ ...court, images: detail?.images || [] });
                 setBranch(br || null);
                 setRecommendedCourts(recCourts);
             } catch (err) {
@@ -65,11 +69,13 @@ const ViewCourtInfo = () => {
 
     useEffect(() => {
         if (!mainCourt) return;
+        setSlotsLoading(true);
         const dateStr = format(selectedDate, 'yyyy-MM-dd');
         fetch(`${API_BASE}/bookings/availability?courtId=${mainCourt.courtId}&date=${dateStr}`)
             .then(r => r.ok ? r.json() : [])
             .then(slots => setAvailableSlots(slots || []))
-            .catch(() => setAvailableSlots([]));
+            .catch(() => setAvailableSlots([]))
+            .finally(() => setSlotsLoading(false));
     }, [mainCourt, selectedDate]);
 
     const generateWeekDates = (weekStart) => {
@@ -84,11 +90,6 @@ const ViewCourtInfo = () => {
             });
         }
         return dates;
-    };
-
-    const extractImageUrls = (imageUrls) => {
-        if (!imageUrls) return [];
-        return imageUrls.split('|').map(u => u.trim()).filter(Boolean);
     };
 
     const formatPrice = (n) => {
@@ -107,7 +108,7 @@ const ViewCourtInfo = () => {
             const isAvailable = availableSlots.some(s => parseInt(s.slice(0, 2)) === h);
             const isActive = mainCourt?.status === 'Active';
             let status = 'maintenance';
-            if (isActive) status = isAvailable ? 'available' : 'booked';
+            if (isActive) status = slotsLoading ? 'loading' : (isAvailable ? 'available' : 'booked');
             hours.push({
                 start: `${h.toString().padStart(2, '0')}:00`,
                 end: `${(h + 1).toString().padStart(2, '0')}:00`,
@@ -120,7 +121,9 @@ const ViewCourtInfo = () => {
     const allHours = generateHourTimeline();
     const visibleHours = allHours.slice(currentHourIndex, currentHourIndex + maxVisibleHours);
     const weekDates = generateWeekDates(currentWeekStart);
-    const images = mainCourt ? extractImageUrls(mainCourt.imageUrls) : [];
+    const images = mainCourt?.images?.length
+        ? [...mainCourt.images].sort((a, b) => a.sortOrder - b.sortOrder).map(i => i.url)
+        : [];
 
     if (loading) {
         return (
@@ -284,7 +287,10 @@ const ViewCourtInfo = () => {
                                                     <div key={idx} className={`vci-time-slot ${hour.status}`}>
                                                         <span className="vci-slot-time">{hour.start} - {hour.end}</span>
                                                         <span className="vci-slot-label">
-                                                            {hour.status === 'available' ? 'Còn trống' : hour.status === 'booked' ? 'Đã đặt' : 'Bảo trì'}
+                                                            {hour.status === 'loading' ? 'Đang tải...'
+                                                                : hour.status === 'available' ? 'Còn trống'
+                                                                : hour.status === 'booked' ? 'Đã đặt'
+                                                                : 'Bảo trì'}
                                                         </span>
                                                     </div>
                                                 ))}
@@ -338,10 +344,9 @@ const ViewCourtInfo = () => {
                         
                         <div className="vci-recommended-grid">
                             {recommendedCourts.map((court, idx) => {
-                                const imgs = extractImageUrls(court.imageUrls);
                                 return (
                                     <article key={idx} className="vci-rec-court-card">
-                                        <img className="vci-rec-img" src={imgs[0] || image2} alt={court.name} />
+                                        <img className="vci-rec-img" src={court.imageUrl || image2} alt={court.name} />
                                         <div className="vci-rec-content">
                                             <h3 className="vci-rec-court-name">{court.name}</h3>
                                             <p className="vci-rec-meta-text"><FiMapPin size={13} /> {branch?.name}</p>

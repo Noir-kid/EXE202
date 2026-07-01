@@ -4,7 +4,6 @@ import { DataGrid } from '@mui/x-data-grid';
 import { useTheme } from '@mui/material';
 import { tokens } from '../../theme';
 import Head from '../../Components/Head';
-import { jwtDecode } from 'jwt-decode';
 import { fetchWithAuth } from '../../Components/fetchWithAuth/fetchWithAuth';
 import { API_BASE } from '../../config';
 
@@ -18,7 +17,6 @@ const StaffFeedback = () => {
     const theme  = useTheme();
     const colors = tokens(theme.palette.mode);
     const token  = sessionStorage.getItem('token');
-    const decoded = token ? jwtDecode(token) : {};
 
     const [rows, setRows] = useState([]);
 
@@ -36,6 +34,7 @@ const StaffFeedback = () => {
         fetchData();
         const id = setInterval(fetchData, 30000);
         return () => clearInterval(id);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [token]);
 
     const dgSx = {

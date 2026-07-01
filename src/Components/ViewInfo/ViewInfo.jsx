@@ -3,7 +3,6 @@ import './ViewInfo.css';
 import { Link } from 'react-router-dom';
 import Header from '../Header/header';
 import Footer from '../Footer/Footer';
-import { jwtDecode } from 'jwt-decode';
 import userImg from '../../Assets/user.jpg';
 import { fetchWithAuth } from '../fetchWithAuth/fetchWithAuth';
 import { API_BASE } from '../../config';

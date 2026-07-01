@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Button, Chip, Typography } from '@mui/material';
+import { Box, Button, Chip } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { useTheme } from '@mui/material';
 import { tokens } from '../../theme';
 import Head from '../../Components/Head';
 import { toast } from 'react-toastify';
-import { jwtDecode } from 'jwt-decode';
 import { fetchWithAuth } from '../../Components/fetchWithAuth/fetchWithAuth';
 import { API_BASE } from '../../config';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
@@ -26,9 +25,6 @@ const TimeSlotManagement = () => {
     const theme  = useTheme();
     const colors = tokens(theme.palette.mode);
     const token  = sessionStorage.getItem('token');
-    const decoded = token ? jwtDecode(token) : {};
-    const myRole  = decoded.role || '';
-
     const [rows,  setRows]  = useState([]);
     const [total, setTotal] = useState(0);
     const [loading, setLoading] = useState(false);

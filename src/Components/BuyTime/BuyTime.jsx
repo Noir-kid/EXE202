@@ -3,7 +3,6 @@ import './BuyTime.css';
 import { toast } from 'react-toastify';
 import { fetchWithAuth } from '../fetchWithAuth/fetchWithAuth';
 import { API_BASE } from '../../config';
-import { useNavigate } from 'react-router-dom';
 import {
     FiUser, FiMail, FiPhone, FiCreditCard,
     FiCheckCircle, FiChevronRight, FiZap,
@@ -26,7 +25,6 @@ const fmt = (n) =>
     n ? Math.floor(n).toLocaleString('vi-VN') : '0';
 
 const BuyTime = () => {
-    const navigate = useNavigate();
     const [user,          setUser]         = useState(null);
     const [amount,        setAmount]       = useState(null);
     const [customAmount,  setCustomAmount] = useState('');

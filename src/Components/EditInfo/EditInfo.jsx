@@ -2,11 +2,8 @@ import React, { useState, useEffect } from 'react';
 import './EditInfo.css';
 import Header from '../Header/header';
 import Footer from '../Footer/Footer';
-import { jwtDecode } from 'jwt-decode';
 import { toast } from 'react-toastify';
-import { imageDb } from '../googleSignin/config';
-import { v4 } from 'uuid';
-import { uploadBytes, getDownloadURL, ref } from 'firebase/storage';
+import { uploadImage } from '../uploadImage/uploadImage';
 import { useNavigate, Link } from 'react-router-dom';
 import { fetchWithAuth } from '../fetchWithAuth/fetchWithAuth';
 import { API_BASE } from '../../config';
@@ -16,7 +13,6 @@ import { IoCreateOutline, IoCloudUploadOutline, IoSaveOutline } from 'react-icon
 export default function EditInfo() {
     const navigate = useNavigate();
     const [userInfo, setUserInfo] = useState({ userId: '', firstName: '', lastName: '', email: '', phone: '', img: '' });
-    const [userData, setUserData] = useState({});
     const [img, setImg] = useState(null);
     const [imgPreview, setImgPreview] = useState('');
     const [uploading, setUploading] = useState(false);
@@ -60,9 +56,7 @@ export default function EditInfo() {
     const handleUpload = () => {
         if (!img) { toast.error('Chưa chọn ảnh'); return; }
         setUploading(true);
-        const imgRef = ref(imageDb, `files/${v4()}`);
-        uploadBytes(imgRef, img)
-            .then(() => getDownloadURL(imgRef))
+        uploadImage(img, 'avatars')
             .then(url => {
                 setUserInfo(prev => ({ ...prev, img: url }));
                 toast.success('Upload ảnh thành công!');

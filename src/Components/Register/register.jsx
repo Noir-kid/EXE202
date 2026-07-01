@@ -176,7 +176,7 @@ const Register = ({ onSwitchToLogin }) => {
 
                 <label className="sg-checkbox-label">
                     <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} />
-                    <span>Tôi đồng ý với <a href="#" className="sg-form-link">Điều khoản sử dụng</a></span>
+                    <span>Tôi đồng ý với <span className="sg-form-link">Điều khoản sử dụng</span></span>
                 </label>
 
                 <button type="submit" className="sg-submit-btn sg-green-btn">Đăng ký</button>

@@ -484,6 +484,13 @@
   color: #94a3b8;
 }
 
+.vci-time-slot.loading {
+  background: rgba(148, 163, 184, 0.05);
+  border-color: rgba(148, 163, 184, 0.1);
+  color: #94a3b8;
+  opacity: 0.6;
+}
+
 .vci-slot-time {
   font-size: 13px;
   font-weight: 800;

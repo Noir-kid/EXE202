@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import './login.css';
 import { toast } from 'react-toastify';
-import { jwtDecode } from 'jwt-decode';
 import { Link, useNavigate } from 'react-router-dom';
 import { MdEmail, MdLock, MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import { FcGoogle } from 'react-icons/fc';

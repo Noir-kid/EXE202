@@ -88,8 +88,6 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     const isOwner = role === 'PartnerAdmin' || role === 'BranchManager';
     const isStaff = role === 'Staff';
 
-    const prefix = isAdmin ? '/admin' : isOwner ? '/owner' : '/staff';
-
     return (
         <aside className={`sg-sidebar${collapsed ? ' collapsed' : ''}`}>
             {/* Logo */}
@@ -177,8 +175,9 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                         </div>
                         <div className="sg-nav-section">
                             {!collapsed && <div className="sg-nav-section-title">Vận hành</div>}
+                            <NavItem to="/owner/booking" icon={<EventNoteOutlinedIcon sx={{ fontSize: 19 }} />} label="Lịch đặt sân" collapsed={collapsed} />
                             <NavItem to="/owner/timeSlot" icon={<AccessAlarmIcon sx={{ fontSize: 19 }} />} label="Khung giờ" collapsed={collapsed} />
-                            <NavItem to="/owner/timeManage" icon={<CalendarTodayOutlinedIcon sx={{ fontSize: 19 }} />} label="Lịch sân" collapsed={collapsed} />
+                            <NavItem to="/owner/timeManage" icon={<CalendarTodayOutlinedIcon sx={{ fontSize: 19 }} />} label="Giờ hoạt động" collapsed={collapsed} />
                             <NavItem to="/owner/payment" icon={<PaymentIcon sx={{ fontSize: 19 }} />} label="Thanh toán" collapsed={collapsed} />
                             <NavItem to="/owner/staffFeedback" icon={<FeedbackOutlinedIcon sx={{ fontSize: 19 }} />} label="Phản hồi" collapsed={collapsed} />
                         </div>

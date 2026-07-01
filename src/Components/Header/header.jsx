@@ -29,7 +29,6 @@ const Header = () => {
             return;
         }
 
-        const userId   = decoded.userId  || decoded.UserId  || '';
         const userName = decoded.fullName || decoded.Username || '';
         const role     = decoded.role     || decoded.Role     || '';
         if (role !== 'Customer') { sessionStorage.clear(); navigate('/'); return; }

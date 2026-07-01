@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
     Box, Button, Dialog, DialogActions, DialogContent,
-    DialogTitle, MenuItem, Select, Typography,
+    DialogTitle, FormControl, InputLabel, MenuItem, Select, Typography,
 } from "@mui/material";
 import Head from "../../Components/Head";
 import './BadmintonCourtHours.css';
@@ -18,26 +18,42 @@ const BadmintonCourtHours = () => {
     const [start, setStart] = useState('');
     const [end, setEnd]     = useState('');
     const [branch, setBranch] = useState(null);
+    const [myBranches, setMyBranches] = useState([]);
+    const [selectedBranchId, setSelectedBranchId] = useState('');
 
     const token   = sessionStorage.getItem('token');
     const decoded = token ? jwtDecode(token) : {};
-    const myBranchId = decoded.branchId || null;
+    // BranchManager/Staff are scoped to one branch via the JWT claim.
+    // PartnerAdmin ("Chủ sân") can own several branches, so no single
+    // branchId claim exists for them — let them pick one instead.
+    const myBranchId = decoded.branchId || selectedBranchId || null;
 
-    const fetchBranch = async () => {
-        if (!myBranchId) return;
-        try {
-            const res = await fetchWithAuth(`${API_BASE}/branches/${myBranchId}`);
-            if (!res.ok) return;
-            const data = await res.json();
-            setBranch(data);
-            setWorkingHours({
-                start: data.openTime  ? data.openTime.substring(0,5)  : '',
-                end:   data.closeTime ? data.closeTime.substring(0,5) : '',
-            });
-        } catch (e) { console.error(e); }
+    const applyBranch = (data) => {
+        setBranch(data);
+        setWorkingHours({
+            start: data.openTime  ? data.openTime.substring(0,5)  : '',
+            end:   data.closeTime ? data.closeTime.substring(0,5) : '',
+        });
     };
 
-    useEffect(() => { fetchBranch(); }, [myBranchId]);
+    useEffect(() => {
+        if (decoded.branchId) return;
+        fetchWithAuth(`${API_BASE}/branches/manage`)
+            .then(r => r.ok ? r.json() : [])
+            .then(list => {
+                setMyBranches(list || []);
+                if (list?.length) setSelectedBranchId(prev => prev || list[0].branchId);
+            })
+            .catch(() => {});
+    }, [decoded.branchId]);
+
+    useEffect(() => {
+        if (!myBranchId) return;
+        fetchWithAuth(`${API_BASE}/branches/${myBranchId}`)
+            .then(r => r.ok ? r.json() : null)
+            .then(data => { if (data) applyBranch(data); })
+            .catch(() => {});
+    }, [myBranchId]);
 
     const handleEditClick = () => {
         setStart(workingHours.start);
@@ -64,11 +80,11 @@ const BadmintonCourtHours = () => {
             });
             if (res.ok) {
                 toast.success('Đã cập nhật giờ làm việc!');
-                setWorkingHours({ start, end });
+                applyBranch({ ...branch, openTime: start, closeTime: end });
                 setDialogOpen(false);
-                fetchBranch();
             } else {
-                toast.error('Cập nhật thất bại.');
+                const err = await res.json().catch(() => ({}));
+                toast.error(err.error || 'Cập nhật thất bại.');
             }
         } catch (e) { toast.error(`Lỗi: ${e.message}`); }
     };
@@ -90,6 +106,21 @@ const BadmintonCourtHours = () => {
                 <Typography variant="body2" className="timeslotwork-caption">
                     {branch?.name ? `Chi nhánh: ${branch.name}` : 'Thời gian sân mở cửa đón khách trong ngày'}
                 </Typography>
+
+                {myBranches.length > 0 && (
+                    <FormControl size="small" sx={{ width: '100%', mb: 2.5 }}>
+                        <InputLabel>Chi nhánh</InputLabel>
+                        <Select
+                            value={selectedBranchId}
+                            label="Chi nhánh"
+                            onChange={e => setSelectedBranchId(e.target.value)}
+                        >
+                            {myBranches.map(b => (
+                                <MenuItem key={b.branchId} value={b.branchId}>{b.name}</MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                )}
 
                 {workingHours.start && workingHours.end ? (
                     <Box className="timeslotwork-hoursCard">

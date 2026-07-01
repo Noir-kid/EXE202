@@ -4,7 +4,7 @@ public enum PartnerStatus   { Pending, Active, Suspended, Rejected }
 public enum BranchStatus    { Active, Closed, Maintenance }
 public enum CourtStatus     { Active, Maintenance, Inactive }
 public enum BookingStatus   { Pending, Confirmed, CheckedIn, CheckedOut, Cancelled, NoShow }
-public enum PaymentMethod   { MoMo, VNPay, Cash, Wallet }
+public enum PaymentMethod   { MoMo, VNPay, PayOS, Cash, Wallet }
 public enum PaymentStatus   { Pending, Success, Failed, Refunded }
 public enum DiscountType    { Percent, Fixed }
 public enum LoyaltyType     { Earn, Redeem, Expire, Bonus }

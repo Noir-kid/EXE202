@@ -7,7 +7,6 @@ import { DataGrid } from '@mui/x-data-grid';
 import { useTheme } from '@mui/material';
 import { tokens } from '../../theme';
 import Head from '../../Components/Head';
-import { jwtDecode } from 'jwt-decode';
 import { fetchWithAuth } from '../../Components/fetchWithAuth/fetchWithAuth';
 import { toast } from 'react-toastify';
 import { API_BASE } from '../../config';
@@ -37,7 +36,6 @@ const StaffBooking = () => {
     const theme  = useTheme();
     const colors = tokens(theme.palette.mode);
     const token  = sessionStorage.getItem('token');
-    const decoded = token ? jwtDecode(token) : {};
 
     const [rows,    setRows]    = useState([]);
     const [total,   setTotal]   = useState(0);
