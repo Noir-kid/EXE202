@@ -44,7 +44,6 @@ import AnimatedIcons from './Components/AnimatedIcons/animatedIcons';
 import OwnerStaff from './Scene/ownerStaff';
 import StaffBooking from './Scene/staffBooking';
 import Partner from './Scene/partner';
-import useGoogleRedirectResult from './hooks/useGoogleRedirectResult';
 
 // Handles server-side Google OAuth redirect: /auth/callback?accessToken=...&refreshToken=...
 const AuthCallback = () => {
@@ -89,9 +88,6 @@ const App = () => {
   const [theme, colorMode] = useMode();
   const [isSidebar, setIsSidebar] = useState(true);
   const [searchCriteria, setSearchCriteria] = useState({ branch: '', location: '' });
-
-  // Xử lý kết quả Google redirect khi app load lại sau khi user đăng nhập Google
-  useGoogleRedirectResult();
 
   useEffect(() => {
     const token = sessionStorage.getItem('token');
