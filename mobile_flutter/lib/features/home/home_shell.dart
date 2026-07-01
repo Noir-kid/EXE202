@@ -346,8 +346,8 @@ class _QuickActions extends StatelessWidget {
           onTap: onProfileTap,
         ),
         _QuickActionCard(
-          icon: Icons.payments,
-          label: 'Top-up',
+          icon: Icons.manage_accounts,
+          label: 'Account',
           onTap: onProfileTap,
         ),
       ],

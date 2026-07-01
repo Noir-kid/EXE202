@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
 import '../../core/network/customer_api.dart';
-import '../../core/session/session_controller.dart';
 import '../../shared/models/branch.dart';
 import '../../shared/models/feedback_item.dart';
 import '../../shared/widgets/async_state.dart';
@@ -19,48 +16,12 @@ class FeedbackScreen extends StatefulWidget {
 }
 
 class _FeedbackScreenState extends State<FeedbackScreen> {
-  final _content = TextEditingController();
-  int _rating = 5;
-  bool _posting = false;
   late Future<List<FeedbackItem>> _future = widget.api.getFeedbacksByBranch(
     widget.branch.id,
   );
 
-  @override
-  void dispose() {
-    _content.dispose();
-    super.dispose();
-  }
-
   void _reload() {
     setState(() => _future = widget.api.getFeedbacksByBranch(widget.branch.id));
-  }
-
-  Future<void> _post() async {
-    final session = context.read<SessionController>();
-    final userId = session.userId;
-    if (userId == null || _content.text.trim().isEmpty) return;
-    setState(() => _posting = true);
-    try {
-      await widget.api.postFeedback(
-        userId: userId,
-        branchId: widget.branch.id,
-        rating: _rating,
-        content: _content.text.trim(),
-      );
-      _content.clear();
-      _reload();
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Feedback submitted.')),
-      );
-    } catch (error) {
-      if (!mounted) return;
-      final message = session.apiClient.messageFromError(error);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
-    } finally {
-      if (mounted) setState(() => _posting = false);
-    }
   }
 
   @override
@@ -81,45 +42,15 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  'Write feedback',
+                  'Reviews',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w800,
                       ),
                 ),
-                const SizedBox(height: 12),
-                SegmentedButton<int>(
-                  segments: const [
-                    ButtonSegment(value: 1, label: Text('1')),
-                    ButtonSegment(value: 2, label: Text('2')),
-                    ButtonSegment(value: 3, label: Text('3')),
-                    ButtonSegment(value: 4, label: Text('4')),
-                    ButtonSegment(value: 5, label: Text('5')),
-                  ],
-                  selected: {_rating},
-                  onSelectionChanged: (value) {
-                    setState(() => _rating = value.first);
-                  },
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: _content,
-                  minLines: 3,
-                  maxLines: 5,
-                  decoration: const InputDecoration(
-                    labelText: 'Content',
-                    alignLabelWithHint: true,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                FilledButton.icon(
-                  onPressed: _posting ? null : _post,
-                  icon: _posting
-                      ? const SizedBox.square(
-                          dimension: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.send),
-                  label: const Text('Submit'),
+                const SizedBox(height: 8),
+                const Text(
+                  'Backend hiện tạo review từ booking đã hoàn tất. Màn này chỉ hiển thị review hiện có của chi nhánh.',
+                  style: TextStyle(color: Color(0xFF6B7280)),
                 ),
               ],
             ),

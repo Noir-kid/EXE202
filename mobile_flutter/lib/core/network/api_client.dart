@@ -75,6 +75,8 @@ class ApiClient {
       if (data is Map) {
         if (data['msg'] != null) return data['msg'].toString();
         if (data['message'] != null) return data['message'].toString();
+        if (data['detail'] != null) return data['detail'].toString();
+        if (data['title'] != null) return data['title'].toString();
         if (data['errors'] != null) return data['errors'].toString();
       }
       
