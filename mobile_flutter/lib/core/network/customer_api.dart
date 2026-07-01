@@ -43,7 +43,7 @@ class CustomerApi {
         .toList();
   }
 
-  Future<void> bookByBalance({
+  Future<void> createBooking({
     required String userId,
     required String courtId,
     required DateTime date,

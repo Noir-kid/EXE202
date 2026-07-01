@@ -108,7 +108,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 _Line(label: 'Email', value: detail?.email ?? '-'),
                 _Line(label: 'Phone', value: detail?.phone ?? '-'),
-                _Line(label: 'Balance', value: formatMoney(account?.balance ?? 0)),
+                _Line(label: 'E-wallet', value: formatMoney(account?.balance ?? 0)),
               ],
             ),
             const SizedBox(height: 16),

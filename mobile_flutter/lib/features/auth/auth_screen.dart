@@ -123,7 +123,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         const SizedBox(height: 8),
                         Text(
                           _registerMode
-                              ? 'Register to book courts and manage your balance.'
+                              ? 'Register to book courts and manage your e-wallet.'
                               : 'Sign in to continue booking your next match.',
                           style: const TextStyle(color: Color(0xFF4B5563)),
                           textAlign: TextAlign.center,

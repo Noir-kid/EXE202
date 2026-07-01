@@ -92,7 +92,7 @@ class _BookingScreenState extends State<BookingScreen> {
     if (userId == null || court == null) return;
     setState(() => _submitting = true);
     try {
-      await widget.api.bookByBalance(
+      await widget.api.createBooking(
         userId: userId,
         courtId: court.id,
         date: _date,
@@ -326,7 +326,7 @@ class _BalanceCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Current balance',
+                  'E-wallet balance',
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
                         color: Colors.white.withValues(alpha: 0.8),
                         letterSpacing: 1.2,
