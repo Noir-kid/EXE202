@@ -6,6 +6,7 @@ import { Modal } from 'antd';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import CreateFeedbackModal from '../CreateFeedbackModal/CreateFeedbackModal';
+import PaymentModal from '../PaymentModal/PaymentModal';
 import { fetchWithAuth } from '../fetchWithAuth/fetchWithAuth';
 import { API_BASE } from '../../config';
 
@@ -50,6 +51,7 @@ export default function ViewHistory() {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState(TODAY);
   const [cancelTarget, setCancelTarget] = useState(null);
+  const [paymentTarget, setPaymentTarget] = useState(null); // { bookingId, amount }
   const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
   const [feedbackData, setFeedbackData] = useState({});
 
@@ -132,6 +134,15 @@ export default function ViewHistory() {
               Đánh giá
             </button>
           )}
+          {(type === TODAY || type === UPCOMING) && b.status === 'Pending' && (
+            <button
+              className="vh-feedback-btn"
+              style={{ marginRight: 6, background: '#10b981', color: '#fff', border: 'none' }}
+              onClick={() => setPaymentTarget({ bookingId: b.bookingId, amount: b.totalAmount })}
+            >
+              Thanh toán
+            </button>
+          )}
           {(type === TODAY || type === UPCOMING) && (b.status === 'Pending' || b.status === 'Confirmed') && (
             <button
               className="view-history-button view-history-cancel-btn"
@@ -159,6 +170,14 @@ export default function ViewHistory() {
         <p>Bạn có chắc muốn hủy lịch đặt sân này không?</p>
         <p className="warning">HÀNH ĐỘNG NÀY KHÔNG THỂ HOÀN TÁC!</p>
       </Modal>
+
+      {paymentTarget && (
+        <PaymentModal
+          bookingId={paymentTarget.bookingId}
+          amount={paymentTarget.amount}
+          onClose={() => setPaymentTarget(null)}
+        />
+      )}
 
       <div className="view-history-header"><Header /></div>
 

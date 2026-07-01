@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using SportSG.Application.Repositories;
 using SportSG.Domain.Entities;
@@ -7,8 +8,6 @@ namespace SportSG.Infrastructure.Repositories;
 
 public class UnitOfWork(AppDbContext ctx) : IUnitOfWork
 {
-    private IDbContextTransaction? _tx;
-
     public IRepository<User>               Users               => new Repository<User>(ctx);
     public IRepository<Role>               Roles               => new Repository<Role>(ctx);
     public IRepository<Partner>            Partners            => new Repository<Partner>(ctx);
@@ -47,22 +46,25 @@ public class UnitOfWork(AppDbContext ctx) : IUnitOfWork
     public Task<int> SaveChangesAsync(CancellationToken ct = default)
         => ctx.SaveChangesAsync(ct);
 
-    public async Task BeginTransactionAsync(CancellationToken ct = default)
-        => _tx = await ctx.Database.BeginTransactionAsync(ct);
-
-    public async Task CommitAsync(CancellationToken ct = default)
+    public async Task ExecuteInTransactionAsync(Func<CancellationToken, Task> operation, CancellationToken ct = default)
     {
-        if (_tx is not null) await _tx.CommitAsync(ct);
-    }
-
-    public async Task RollbackAsync(CancellationToken ct = default)
-    {
-        if (_tx is not null) await _tx.RollbackAsync(ct);
+        var strategy = ctx.Database.CreateExecutionStrategy();
+        await strategy.ExecuteAsync(async () =>
+        {
+            await using var tx = await ctx.Database.BeginTransactionAsync(ct);
+            try
+            {
+                await operation(ct);
+                await tx.CommitAsync(ct);
+            }
+            catch
+            {
+                await tx.RollbackAsync(ct);
+                throw;
+            }
+        });
     }
 
     public async ValueTask DisposeAsync()
-    {
-        if (_tx is not null) await _tx.DisposeAsync();
-        await ctx.DisposeAsync();
-    }
+        => await ctx.DisposeAsync();
 }

@@ -8,10 +8,9 @@ const PieChart = (data) => {
   //data is wrapped in an object
   const actualData = data.data
   const findLongestIdLength = () => {
-    var r = actualData.map(e => {
-      return e.id
-    }).sort((a, b) => b.length - a.length)
-    return r[0]?.length
+    if (!actualData || actualData.length === 0) return 0;
+    var r = actualData.map(e => e.id).sort((a, b) => b.length - a.length)
+    return r[0]?.length ?? 0
   }
   const longestIdLength = findLongestIdLength()
   return (

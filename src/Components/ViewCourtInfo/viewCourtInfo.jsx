@@ -3,10 +3,11 @@ import Header from '../Header/header';
 import Navbar from '../Navbar/Navbar';
 import './viewCourtInfo.css';
 import Footer from '../Footer/Footer';
-import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
+import { FiArrowLeft, FiArrowRight, FiMapPin, FiInfo, FiTag, FiClock, FiLayers } from 'react-icons/fi';
 import { format, addDays, subDays, startOfWeek } from 'date-fns';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { API_BASE } from '../../config';
+import image2 from '../../Assets/image2.jpg';
 
 const ViewCourtInfo = () => {
     const [mainCourt, setMainCourt] = useState(null);
@@ -101,8 +102,9 @@ const ViewCourtInfo = () => {
         const closeH = branch.closeTime ? parseInt(branch.closeTime.slice(0, 2)) : 22;
         const hours = [];
         for (let h = openH; h < closeH; h++) {
-            const slotTimeStr = `${h.toString().padStart(2, '0')}:00:00`;
-            const isAvailable = availableSlots.includes(slotTimeStr);
+            // Slot strings from BE keep the branch's real OpenTime minute
+            // (e.g. "01:05:00"), not necessarily ":00:00" — match by hour.
+            const isAvailable = availableSlots.some(s => parseInt(s.slice(0, 2)) === h);
             const isActive = mainCourt?.status === 'Active';
             let status = 'maintenance';
             if (isActive) status = isAvailable ? 'available' : 'booked';
@@ -120,162 +122,251 @@ const ViewCourtInfo = () => {
     const weekDates = generateWeekDates(currentWeekStart);
     const images = mainCourt ? extractImageUrls(mainCourt.imageUrls) : [];
 
-    if (loading) return <div style={{ padding: 40, textAlign: 'center' }}>Đang tải...</div>;
-    if (error) return <div style={{ padding: 40, color: 'red' }}>{error}</div>;
+    if (loading) {
+        return (
+            <div className="vci-loader-container">
+                <div className="vci-spinner"></div>
+                <p>Đang tải thông tin sân đấu...</p>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="vci-error-container">
+                <FiInfo size={32} />
+                <p>Đã xảy ra lỗi: {error}</p>
+                <button className="vci-back-btn" onClick={() => navigate(-1)}>Quay lại</button>
+            </div>
+        );
+    }
 
     return (
-        <div className="viewcourtinfo">
-            {token ? <div className="findCourtHeader"><Header /></div> : <Navbar />}
-            <div className="viewCourtInfo-wrapper">
-                <div className="background">
-                    <div className="viewcourtinfo-body">
-                        <div className="viewcourtinfo-body-content">
-                            <div className="viewcourtinfo-body-pic">
-                                {images.length > 0 && (
-                                    <div className="viewcourtinfo-slider">
-                                        <button className="arrow-left" onClick={() => setCurrentImageIndex(i => Math.max(i - 1, 0))}>
-                                            <FaArrowLeft />
-                                        </button>
-                                        <img
-                                            className="viewcourtinfo-img"
-                                            src={images[currentImageIndex] || ''}
-                                            alt={`Court ${currentImageIndex}`}
-                                        />
-                                        <button className="arrow-right" onClick={() => setCurrentImageIndex(i => Math.min(i + 1, images.length - 1))}>
-                                            <FaArrowRight />
-                                        </button>
-                                    </div>
-                                )}
-                                <div className="indicator-wrapper">
+        <div className="vci-page">
+            {token ? <div className="vci-header-wrap"><Header /></div> : <Navbar />}
+
+            <main className="vci-main-content">
+                <div className="vci-grid-layout">
+                    {/* LEFT COLUMN: Gallery slider & Meta Info */}
+                    <section className="vci-left-column">
+                        <div className="vci-gallery-card">
+                            {images.length > 0 ? (
+                                <div className="vci-slider">
+                                    <button 
+                                        className="vci-slider-arrow arrow-left" 
+                                        onClick={() => setCurrentImageIndex(i => Math.max(i - 1, 0))}
+                                        disabled={currentImageIndex === 0}
+                                    >
+                                        <FiArrowLeft />
+                                    </button>
+                                    
+                                    <img
+                                        className="vci-main-img"
+                                        src={images[currentImageIndex] || ''}
+                                        alt={`Sân đấu ${mainCourt?.name}`}
+                                    />
+                                    
+                                    <button 
+                                        className="vci-slider-arrow arrow-right" 
+                                        onClick={() => setCurrentImageIndex(i => Math.min(i + 1, images.length - 1))}
+                                        disabled={currentImageIndex === images.length - 1}
+                                    >
+                                        <FiArrowRight />
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="vci-slider-placeholder">
+                                    <p>Không có hình ảnh sân đấu</p>
+                                </div>
+                            )}
+                            
+                            {images.length > 1 && (
+                                <div className="vci-indicator-row">
                                     {images.map((_, idx) => (
-                                        <span key={idx} className={`indicator ${currentImageIndex === idx ? 'active' : ''}`} />
+                                        <span 
+                                            key={idx} 
+                                            className={`vci-indicator-dot ${currentImageIndex === idx ? 'active' : ''}`}
+                                            onClick={() => setCurrentImageIndex(idx)}
+                                        />
                                     ))}
                                 </div>
-                                <div className="viewcourtinfo-info-status">
-                                    <div className="viewcourtinfo-info">
-                                        <p className="viewcourt-title">Địa chỉ: {branch?.address}</p>
-                                        <p className="viewcourt-title">Chi nhánh: {branch?.name}</p>
-                                        <p className="viewcourt-title">Giá: {formatPrice(mainCourt?.basePrice)} VND/giờ</p>
+                            )}
+
+                            {/* Core Meta Card Overlay */}
+                            <div className="vci-quick-meta-card">
+                                <div className="vci-meta-item">
+                                    <FiMapPin className="vci-meta-icon" />
+                                    <div>
+                                        <h4 className="vci-meta-label">Chi nhánh & Địa chỉ</h4>
+                                        <p className="vci-meta-val"><strong>{branch?.name}</strong> - {branch?.address}</p>
+                                    </div>
+                                </div>
+                                <div className="vci-meta-divider"></div>
+                                <div className="vci-meta-item">
+                                    <FiTag className="vci-meta-icon" />
+                                    <div>
+                                        <h4 className="vci-meta-label">Giá thuê sân</h4>
+                                        <p className="vci-meta-val"><span className="vci-price-highlight">{formatPrice(mainCourt?.basePrice)}đ</span> / giờ</p>
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </section>
 
-                            <div className="viewcourtinfo-body-details">
-                                <div className="viewcourtinfo-body-courtId">
-                                    <h1>Sân: {mainCourt?.name}</h1>
+                    {/* RIGHT COLUMN: Details & Time Selection */}
+                    <section className="vci-right-column">
+                        <div className="vci-details-card">
+                            <h1 className="vci-court-title">Sân: {mainCourt?.name}</h1>
+                            
+                            {mainCourt?.description && (
+                                <div className="vci-description-box">
+                                    <h3 className="vci-sub-title">Mô tả chi tiết</h3>
+                                    <p className="vci-desc-text">{mainCourt.description}</p>
                                 </div>
-                                <div className="viewcourtinfo-body-des">
-                                    <h1 className="viewcourtinfo-des-h1">Mô tả:</h1>
-                                    <p className="viewcourtinfo-des-p">{mainCourt?.description}</p>
+                            )}
+
+                            {/* CALENDAR & TIMELINE SLIDERS */}
+                            <div className="vci-booking-widget">
+                                <div className="vci-widget-header">
+                                    <FiClock className="vci-widget-icon" />
+                                    <span>Chọn thời gian & kiểm tra lịch trống</span>
                                 </div>
 
-                                <div className="chooseTimeLine">
-                                    <div className="chooseDate">CHỌN NGÀY</div>
-                                    <div className="date-slider-wrapper">
-                                        <button className="arrow-left" onClick={() => setCurrentWeekStart(d => subDays(d, 7))}>
-                                            <FaArrowLeft />
+                                <div className="vci-step-container">
+                                    {/* Step 1: Date Selector */}
+                                    <div className="vci-step-row">
+                                        <span className="vci-step-badge">1</span>
+                                        <h4 className="vci-step-title">Chọn Ngày Đặt Sân</h4>
+                                    </div>
+
+                                    <div className="vci-date-slider-wrapper">
+                                        <button className="vci-arrow-btn" onClick={() => setCurrentWeekStart(d => subDays(d, 7))}>
+                                            <FiArrowLeft />
                                         </button>
-                                        <div className="date-slider">
+                                        
+                                        <div className="vci-date-slider">
                                             {weekDates.map((d, idx) => (
-                                                <div
+                                                <button
                                                     key={idx}
-                                                    className={`date-item ${selectedDate?.toDateString() === d.fullDate.toDateString() ? 'selected' : ''}`}
+                                                    className={`vci-date-item ${selectedDate?.toDateString() === d.fullDate.toDateString() ? 'selected' : ''}`}
                                                     onClick={() => { setSelectedDate(d.fullDate); setCurrentHourIndex(0); }}
                                                 >
-                                                    <div>{d.day}</div>
-                                                    <div className="line-separator"></div>
-                                                    <div className="viewcourt-date">{d.date}</div>
-                                                    <div className="viewcourt-month">{d.month}</div>
-                                                </div>
+                                                    <span className="vci-date-day">{d.day}</span>
+                                                    <span className="vci-date-num">{d.date}</span>
+                                                    <span className="vci-date-month">{d.month}</span>
+                                                </button>
                                             ))}
                                         </div>
-                                        <button className="arrow-right" onClick={() => setCurrentWeekStart(d => addDays(d, 7))}>
-                                            <FaArrowRight />
+
+                                        <button className="vci-arrow-btn" onClick={() => setCurrentWeekStart(d => addDays(d, 7))}>
+                                            <FiArrowRight />
                                         </button>
                                     </div>
 
-                                    <div className="chooseTime">CHỌN GIỜ</div>
-                                    <div className="schedule-legend-wrapper">
-                                        <div className="schedule">
-                                            <div className="court">
-                                                <button className="arrow-left-timeline" onClick={() => setCurrentHourIndex(i => Math.max(i - 1, 0))}>
-                                                    <FaArrowLeft />
-                                                </button>
-                                                <div className="court-timeline">
-                                                    {visibleHours.map((hour, idx) => (
-                                                        <div key={idx} className={`time-slot ${hour.status}`}>
-                                                            {hour.start} - {hour.end}
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                                <button className="arrow-right-timeline" onClick={() => setCurrentHourIndex(i => Math.min(i + 1, allHours.length - maxVisibleHours))}>
-                                                    <FaArrowRight />
-                                                </button>
+                                    {/* Step 2: Time Slots Timeline */}
+                                    <div className="vci-step-row" style={{ marginTop: '28px' }}>
+                                        <span className="vci-step-badge">2</span>
+                                        <h4 className="vci-step-title">Trạng Thái Khung Giờ Trong Ngày</h4>
+                                    </div>
+
+                                    <div className="vci-timeline-container">
+                                        <div className="vci-timeline-row">
+                                            <button 
+                                                className="vci-arrow-btn" 
+                                                onClick={() => setCurrentHourIndex(i => Math.max(i - 1, 0))}
+                                                disabled={currentHourIndex === 0}
+                                            >
+                                                <FiArrowLeft />
+                                            </button>
+                                            
+                                            <div className="vci-timeline-slots">
+                                                {visibleHours.map((hour, idx) => (
+                                                    <div key={idx} className={`vci-time-slot ${hour.status}`}>
+                                                        <span className="vci-slot-time">{hour.start} - {hour.end}</span>
+                                                        <span className="vci-slot-label">
+                                                            {hour.status === 'available' ? 'Còn trống' : hour.status === 'booked' ? 'Đã đặt' : 'Bảo trì'}
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            
+                                            <button 
+                                                className="vci-arrow-btn" 
+                                                onClick={() => setCurrentHourIndex(i => Math.min(i + 1, allHours.length - maxVisibleHours))}
+                                                disabled={currentHourIndex >= allHours.length - maxVisibleHours}
+                                            >
+                                                <FiArrowRight />
+                                            </button>
+                                        </div>
+
+                                        <div className="vci-timeline-legend">
+                                            <div className="vci-legend-item">
+                                                <span className="vci-legend-color available"></span>
+                                                <span>Còn trống</span>
+                                            </div>
+                                            <div className="vci-legend-item">
+                                                <span className="vci-legend-color booked"></span>
+                                                <span>Đã đặt</span>
+                                            </div>
+                                            <div className="vci-legend-item">
+                                                <span className="vci-legend-color maintenance"></span>
+                                                <span>Bảo trì</span>
                                             </div>
                                         </div>
-                                        <div className="legend">
-                                            <div className="legend-item">
-                                                <div className="legend-color booked"></div>
-                                                <div className="legend-text">Đã đặt</div>
-                                            </div>
-                                            <div className="legend-item">
-                                                <div className="legend-color available"></div>
-                                                <div className="legend-text">Còn trống</div>
-                                            </div>
-                                            <div className="legend-item">
-                                                <div className="legend-color maintenance"></div>
-                                                <div className="legend-text">Bảo trì</div>
-                                            </div>
-                                        </div>
+
                                         <button
-                                            className="timeline-viewCourt"
+                                            className="vci-action-book-btn"
                                             onClick={() => navigate(`/bookCourt?courtId=${mainCourt?.courtId}`)}
                                             disabled={mainCourt?.status !== 'Active'}
                                         >
-                                            Đặt sân
+                                            Đặt sân này ngay
                                         </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    {recommendedCourts.length > 0 && (
-                        <div className="viewcourtinfo-othercourts">
-                            <h1 className="viewcourtinfo-othercourts-h1">SÂN KHÁC</h1>
-                            <div className="viewcourtinfo-othercourts-content">
-                                {recommendedCourts.map((court, idx) => {
-                                    const imgs = extractImageUrls(court.imageUrls);
-                                    return (
-                                        <div key={idx} className="viewcourtinfo-other-pic">
-                                            <img className="viewcourtinfo-other-img" src={imgs[0] || ''} alt="" />
-                                            <div className="viewcourtinfo-other-info">
-                                                <h2>Sân: {court.name}</h2>
-                                                <p>Địa chỉ: {branch?.address}</p>
-                                                <p>Chi nhánh: {branch?.name}</p>
-                                                <p>Giá: {formatPrice(court.basePrice)} VND/giờ</p>
-                                                <div className="viewcourtinfo-other-des">
-                                                    <h1 className="viewcourtinfo-other-des-h1">Mô tả:</h1>
-                                                    <p className="viewcourtinfo-other-des-p">{court.description}</p>
-                                                </div>
-                                                <div className="other-court-button">
-                                                    <button
-                                                        className="viewCourt"
-                                                        onClick={() => navigate(`/viewCourtInfo?courtId=${court.courtId}`)}
-                                                        disabled={court.status !== 'Active'}
-                                                    >
-                                                        Xem sân
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    )}
+                    </section>
                 </div>
-            </div>
+
+                {/* BOTTOM SECTION: Recommended/Other Courts */}
+                {recommendedCourts.length > 0 && (
+                    <section className="vci-recommended-section">
+                        <div className="vci-section-header">
+                            <FiLayers className="vci-recommended-icon" />
+                            <h2 className="vci-recommended-title">Sân Đấu Khác Tại Chi Nhánh</h2>
+                        </div>
+                        
+                        <div className="vci-recommended-grid">
+                            {recommendedCourts.map((court, idx) => {
+                                const imgs = extractImageUrls(court.imageUrls);
+                                return (
+                                    <article key={idx} className="vci-rec-court-card">
+                                        <img className="vci-rec-img" src={imgs[0] || image2} alt={court.name} />
+                                        <div className="vci-rec-content">
+                                            <h3 className="vci-rec-court-name">{court.name}</h3>
+                                            <p className="vci-rec-meta-text"><FiMapPin size={13} /> {branch?.name}</p>
+                                            <p className="vci-rec-price"><FiTag size={13} /> {formatPrice(court.basePrice)}đ/giờ</p>
+                                            
+                                            {court.description && (
+                                                <p className="vci-rec-desc">{court.description}</p>
+                                            )}
+                                            
+                                            <button
+                                                className="vci-rec-btn"
+                                                onClick={() => navigate(`/viewCourtInfo?courtId=${court.courtId}`)}
+                                                disabled={court.status !== 'Active'}
+                                            >
+                                                Xem sân này
+                                            </button>
+                                        </div>
+                                    </article>
+                                );
+                            })}
+                        </div>
+                    </section>
+                )}
+            </main>
+
             <Footer />
         </div>
     );

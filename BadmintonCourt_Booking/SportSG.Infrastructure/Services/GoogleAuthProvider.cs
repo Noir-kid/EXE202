@@ -25,6 +25,12 @@ public class GoogleAuthProvider(IConfiguration cfg, IHttpClientFactory httpFacto
         {
             throw new UnauthorizedAccessException($"Google token không hợp lệ: {ex.Message}");
         }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            // Transient network failure fetching Google's public certs — not the
+            // client's fault, surface as a retryable auth error instead of a 500.
+            throw new UnauthorizedAccessException("Không thể xác thực với Google lúc này, vui lòng thử lại.");
+        }
 
         if (string.IsNullOrEmpty(payload.Email))
             throw new UnauthorizedAccessException("Google token không chứa email.");

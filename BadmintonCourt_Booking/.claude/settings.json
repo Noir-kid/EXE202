@@ -21,7 +21,22 @@
       "d:\\EXE\\src\\Components\\Register",
       "d:\\EXE\\src\\Components\\Popular",
       "d:\\SportSG-main\\EXE202",
+<<<<<<< Updated upstream
       "d:\\SportSG-main\\EXE202\\src"
+=======
+      "d:\\SportSG-main\\EXE202\\src\\Components",
+      "D:\\SportSG-main\\EXE202\\src\\Scene\\courtBranch",
+      "D:\\SportSG-main\\EXE202\\public",
+      "D:\\SportSG-main\\EXE202\\src\\Scene\\user",
+      "D:\\SportSG-main\\EXE202\\src\\Scene\\court",
+      "D:\\SportSG-main\\EXE202\\src\\Scene\\partner",
+      "D:\\SportSG-main\\EXE202\\src\\Components\\findCourt",
+      "d:\\SportSG-main\\EXE202\\src\\Components\\bookCourt",
+      "d:\\SportSG-main\\EXE202\\src\\Components\\ViewHistory",
+      "d:\\SportSG-main\\EXE202\\src\\Components\\PaySuccess",
+      "D:\\SportSG-main\\EXE202\\src\\Components\\bookCourt",
+      "D:\\SportSG-main\\EXE202\\src\\Components\\Home"
+>>>>>>> Stashed changes
     ]
   }
 }

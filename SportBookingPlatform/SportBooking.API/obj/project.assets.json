@@ -4562,11 +4562,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\EXE\\SportBookingPlatform\\SportBooking.API\\SportBooking.API.csproj",
+      "projectUniqueName": "D:\\SportSG-main\\EXE202\\SportBookingPlatform\\SportBooking.API\\SportBooking.API.csproj",
       "projectName": "SportBooking.API",
-      "projectPath": "D:\\EXE\\SportBookingPlatform\\SportBooking.API\\SportBooking.API.csproj",
+      "projectPath": "D:\\SportSG-main\\EXE202\\SportBookingPlatform\\SportBooking.API\\SportBooking.API.csproj",
       "packagesPath": "C:\\Users\\admin\\.nuget\\packages\\",
-      "outputPath": "D:\\EXE\\SportBookingPlatform\\SportBooking.API\\obj\\",
+      "outputPath": "D:\\SportSG-main\\EXE202\\SportBookingPlatform\\SportBooking.API\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -4588,11 +4588,11 @@
           "framework": "net9.0",
           "targetAlias": "net9.0",
           "projectReferences": {
-            "D:\\EXE\\SportBookingPlatform\\SportBooking.Application\\SportBooking.Application.csproj": {
-              "projectPath": "D:\\EXE\\SportBookingPlatform\\SportBooking.Application\\SportBooking.Application.csproj"
+            "D:\\SportSG-main\\EXE202\\SportBookingPlatform\\SportBooking.Application\\SportBooking.Application.csproj": {
+              "projectPath": "D:\\SportSG-main\\EXE202\\SportBookingPlatform\\SportBooking.Application\\SportBooking.Application.csproj"
             },
-            "D:\\EXE\\SportBookingPlatform\\SportBooking.Infrastructure\\SportBooking.Infrastructure.csproj": {
-              "projectPath": "D:\\EXE\\SportBookingPlatform\\SportBooking.Infrastructure\\SportBooking.Infrastructure.csproj"
+            "D:\\SportSG-main\\EXE202\\SportBookingPlatform\\SportBooking.Infrastructure\\SportBooking.Infrastructure.csproj": {
+              "projectPath": "D:\\SportSG-main\\EXE202\\SportBookingPlatform\\SportBooking.Infrastructure\\SportBooking.Infrastructure.csproj"
             }
           }
         }

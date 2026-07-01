@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Chip, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
+import { Box, Button, Chip } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { useTheme } from '@mui/material';
 import { tokens } from '../../theme';
@@ -21,21 +21,49 @@ const ROLE_COLORS = {
 };
 
 const User = () => {
-    const theme  = useTheme();
-    const colors = tokens(theme.palette.mode);
-    const token  = sessionStorage.getItem('token');
+    const theme   = useTheme();
+    const colors  = tokens(theme.palette.mode);
+    const token   = sessionStorage.getItem('token');
     const decoded = token ? jwtDecode(token) : {};
-    const myRole = decoded.role || '';
+    const myRole  = decoded.role || '';
 
-    const [rows, setRows]         = useState([]);
-    const [loading, setLoading]   = useState(true);
+    const [rows, setRows]       = useState([]);
+    const [loading, setLoading] = useState(true);
 
     const dgSx = {
         border: 'none',
-        '& .MuiDataGrid-cell': { borderBottom: `1px solid ${colors.primary[300]}` },
-        '& .MuiDataGrid-columnHeaders': { background: colors.blueAccent[700], borderBottom: 'none' },
-        '& .MuiDataGrid-virtualScroller': { background: colors.primary[400] },
-        '& .MuiDataGrid-footerContainer': { background: colors.blueAccent[700], borderTop: 'none' },
+        borderRadius: 2,
+        overflow: 'hidden',
+        '& .MuiDataGrid-cell': {
+            borderBottom: 'none',
+            color: colors.grey[100],
+        },
+        '& .MuiDataGrid-row':          { borderBottom: `1px solid rgba(148,163,184,0.07)` },
+        '& .MuiDataGrid-row.row-even': { background: colors.bg.card },
+        '& .MuiDataGrid-row.row-odd':  { background: colors.bg.secondary },
+        '& .MuiDataGrid-row:hover':    { background: `${colors.bg.cardHover} !important` },
+        '& .MuiDataGrid-columnHeaders': {
+            background: colors.blueAccent[800],
+            borderBottom: 'none',
+        },
+        '& .MuiDataGrid-columnHeaderTitle': {
+            fontWeight: 700,
+            fontSize: '0.75rem',
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+            color: colors.blueAccent[200],
+        },
+        '& .MuiDataGrid-virtualScroller': {
+            background: colors.bg.secondary,
+        },
+        '& .MuiDataGrid-footerContainer': {
+            background: colors.blueAccent[800],
+            borderTop: 'none',
+        },
+        '& .MuiTablePagination-root': { color: colors.grey[200] },
+        '& .MuiTablePagination-selectIcon': { color: colors.grey[200] },
+        '& .MuiDataGrid-sortIcon': { color: colors.blueAccent[300] },
+        '& .MuiDataGrid-menuIconButton': { color: colors.grey[300] },
     };
 
     const fetchData = async () => {
@@ -43,7 +71,8 @@ const User = () => {
             setLoading(true);
             const res  = await fetchWithAuth(`${API_BASE}/users`);
             const data = await res.json();
-            setRows(data.map((u, i) => ({ ...u, id: u.userId || i })));
+            // id = userId (stable DataGrid key), stt = display-only sequential number
+            setRows(data.map((u, i) => ({ ...u, id: u.userId, stt: i + 1 })));
         } catch (e) {
             console.error(e);
         } finally {
@@ -53,8 +82,8 @@ const User = () => {
 
     useEffect(() => {
         fetchData();
-        const id = setInterval(fetchData, 30000);
-        return () => clearInterval(id);
+        const timer = setInterval(fetchData, 30000);
+        return () => clearInterval(timer);
     }, []);
 
     const toggleStatus = async (userId, current) => {
@@ -67,8 +96,10 @@ const User = () => {
         } catch { toast.error('Thao tác thất bại.'); }
     };
 
+    const canManage = myRole === 'SuperAdmin' || myRole === 'PartnerAdmin';
+
     const columns = [
-        { field: 'id', headerName: 'STT', width: 60 },
+        { field: 'stt', headerName: 'STT', width: 60 },
         { field: 'email', headerName: 'Email', flex: 1.5 },
         {
             field: 'fullName', headerName: 'Họ tên', flex: 1,
@@ -76,38 +107,58 @@ const User = () => {
         },
         { field: 'phone', headerName: 'SĐT', width: 130 },
         {
-            field: 'roleCode', headerName: 'Vai trò', width: 130,
+            field: 'roleCode', headerName: 'Vai trò', width: 140,
             renderCell: ({ value }) => (
-                <Chip label={ROLE_LABELS[value] || value} color={ROLE_COLORS[value] || 'default'} size="small"/>
+                <Chip
+                    label={ROLE_LABELS[value] || value}
+                    color={ROLE_COLORS[value] || 'default'}
+                    size="small"
+                    sx={{ fontWeight: 600 }}
+                />
             ),
         },
         { field: 'branchName', headerName: 'Chi nhánh', flex: 1 },
         {
             field: 'isActive', headerName: 'Trạng thái', width: 120,
             renderCell: ({ value }) => (
-                <Chip label={value ? 'Hoạt động' : 'Đã khóa'} color={value ? 'success' : 'error'} size="small"/>
+                <Chip
+                    label={value ? 'Hoạt động' : 'Đã khóa'}
+                    color={value ? 'success' : 'error'}
+                    size="small"
+                    sx={{ fontWeight: 600 }}
+                />
             ),
         },
-        {
+        ...(canManage ? [{
             field: 'actions', headerName: 'Thao tác', width: 120, sortable: false,
             renderCell: ({ row }) => (
-                myRole === 'SuperAdmin' || myRole === 'PartnerAdmin' ? (
-                    <Button size="small" color={row.isActive ? 'error' : 'success'}
-                        startIcon={row.isActive ? <BlockOutlinedIcon/> : <CheckCircleOutlineIcon/>}
-                        onClick={() => toggleStatus(row.userId, row.isActive)}>
-                        {row.isActive ? 'Khóa' : 'Mở'}
-                    </Button>
-                ) : null
+                <Button
+                    size="small"
+                    color={row.isActive ? 'error' : 'success'}
+                    startIcon={row.isActive ? <BlockOutlinedIcon /> : <CheckCircleOutlineIcon />}
+                    sx={{ textTransform: 'none', fontWeight: 500 }}
+                    onClick={() => toggleStatus(row.userId, row.isActive)}
+                >
+                    {row.isActive ? 'Khóa' : 'Mở'}
+                </Button>
             ),
-        },
+        }] : []),
     ];
 
     return (
         <Box m="20px">
-            <Head title="Quản lý người dùng" subtitle="Danh sách tài khoản trong hệ thống"/>
+            <Head title="Quản lý người dùng" subtitle="Danh sách tài khoản trong hệ thống" />
             <Box mt="20px" height="70vh" sx={dgSx}>
-                <DataGrid rows={rows} columns={columns} loading={loading} rowHeight={52}
-                    pageSizeOptions={[20, 50]} initialState={{ pagination: { paginationModel: { pageSize: 20 } } }}/>
+                <DataGrid
+                    rows={rows}
+                    columns={columns}
+                    loading={loading}
+                    rowHeight={52}
+                    pageSizeOptions={[20, 50]}
+                    initialState={{ pagination: { paginationModel: { pageSize: 20 } } }}
+                    disableRowSelectionOnClick
+                    getRowClassName={p => p.indexRelativeToCurrentPage % 2 === 0 ? 'row-even' : 'row-odd'}
+                />
             </Box>
         </Box>
     );

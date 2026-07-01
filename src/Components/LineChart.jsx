@@ -11,7 +11,7 @@ const LineChart = ({ data = [], isDashboard = false }) => {
     {
       id: "Amount",
       color: colors.greenAccent[500],
-      data: data.map(d => ({ x: d.period, y: d.amount })),
+      data: data.map(d => ({ x: d.name, y: d.amount })),
     },
   ] : [];
 

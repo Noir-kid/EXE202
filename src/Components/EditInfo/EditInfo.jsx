@@ -64,7 +64,7 @@ export default function EditInfo() {
         uploadBytes(imgRef, img)
             .then(() => getDownloadURL(imgRef))
             .then(url => {
-                setUserInfo(prev => ({ ...prev, img: encodeURIComponent(url) }));
+                setUserInfo(prev => ({ ...prev, img: url }));
                 toast.success('Upload ảnh thành công!');
                 setUploading(false);
             })

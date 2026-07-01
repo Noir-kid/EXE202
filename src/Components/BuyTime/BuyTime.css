@@ -1,124 +1,575 @@
-/* Nền */
-.buyTime {
-    background: linear-gradient(to bottom right, #0072b1, #58a14e);
-    background-size: cover;
-    height: 75cqh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+/* ─── BuyTime Professional UI ─────────────────────────────────── */
+
+.bt-page {
+  min-height: 100vh;
+  background: #0a0f1e;
+  color: #f1f5f9;
+  padding-bottom: 80px;
 }
 
-/* Tiêu đề */
-.buyTime_title {
-    text-align: center;
-    color: #000;
-    /* font-size: 2em; */
-    font-weight: 700;
-    margin-bottom: 1em;
+/* ─── PAGE HEADER ─────────────────────────────────────────────── */
+.bt-page-header {
+  padding: 36px 40px 28px;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+  background: linear-gradient(135deg, rgba(30,58,138,.25) 0%, rgba(76,29,149,.15) 100%);
 }
 
-/* Hộp chính */
-.buyTime_bodyContainer {
-    position: relative;
-    overflow: hidden;
-    border-radius: 15px;
-    height: auto;
-    width: 80%;
-    max-width: 600px;
-    padding: 2em;
-    background-color: rgba(255, 255, 255, 0.9);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+.bt-page-title {
+  font-size: 1.9rem;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  margin-bottom: 6px;
+  background: linear-gradient(130deg, #f1f5f9 0%, #93c5fd 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-/* Bài viết */
-.buyTime_article {
-    display: block;
-    text-align: center;
+.bt-page-sub {
+  font-size: 14px;
+  color: #64748b;
 }
 
-/* Các đoạn văn */
-.buyTime_p {
-    color: #333;
-    font-weight: 600;
-    margin: 0.5em 0;
-    text-align: center;
+/* ─── LAYOUT ──────────────────────────────────────────────────── */
+.bt-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 28px;
+  max-width: 980px;
+  margin: 32px auto 0;
+  padding: 0 32px;
+  align-items: start;
 }
 
-/* Lỗi */
-.buyTime_err {
-    color: red;
-    text-align: center;
-    font-weight: 600;
-    margin-top: 0.5em;
+/* ─── FORM CARDS ──────────────────────────────────────────────── */
+.bt-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-/* Chọn phương thức thanh toán */
-.buyTime_select {
-    width: 60%;
-    padding: 0.5em;
-    margin: 1em auto;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-    font-size: 1em;
+.bt-card {
+  background: rgba(30,41,59,.6);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+  transition: border-color .2s;
 }
 
-/* Ô nhập liệu */
-.buyTime_counter1 {
-    text-align: center;
-    width: 120px;
-    padding: 0.5em;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 1em;
+.bt-card:focus-within {
+  border-color: rgba(59,130,246,.3);
 }
 
-/* Trung tâm */
-.buyTime_centerDiv {
-    display: flex;
-    justify-content: center;
-    margin: 1em 0;
+.bt-card--dim {
+  opacity: .45;
+  pointer-events: none;
 }
 
-/* Nút */
-.buyTime_btn {
-    padding: 0.75em 1.5em;
-    margin: 0.5em;
-    background: #ff9900;
-    outline: none;
-    border-radius: 5px;
-    cursor: pointer;
-    color: #fff;
-    font-weight: 700;
-    border: none;
-    transition: background 0.3s, transform 0.3s;
+.bt-card-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+  background: rgba(255,255,255,.02);
 }
 
-.buyTime_btn:hover {
-    background-color: #e68a00;
-    transform: translateY(-2px);
+.bt-step-num {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(37,99,235,.4);
 }
 
-.discount-table {
-    width: 90%;
-    margin: auto;
-    text-align: center;
+.bt-step-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #e2e8f0;
 }
 
-.discount-table th {
-    background-color: #4caf50;
-    color: white;
+.bt-card-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
+/* ─── USER INFO ───────────────────────────────────────────────── */
+.bt-user-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
 
-/* Nhỏ */
-@media (max-width: 600px) {
-    .buyTime_bodyContainer {
-        width: 90%;
-        padding: 1.5em;
-    }
+.bt-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-    .buyTime_select,
-    .buyTime_counter1 {
-        width: 80%;
-    }
+.bt-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bt-avatar-letter {
+  font-size: 20px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.bt-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.bt-user-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin: 0;
+}
+
+.bt-user-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  color: #64748b;
+  margin: 0;
+}
+
+/* Skeleton loader */
+.bt-skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.bt-skeleton-lines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bt-skeleton {
+  background: rgba(255,255,255,.07);
+  border-radius: 6px;
+  animation: bt-pulse 1.5s ease-in-out infinite;
+}
+
+.bt-skeleton--circle {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.bt-skeleton--line {
+  height: 14px;
+  width: 100%;
+}
+
+.bt-skeleton--short {
+  width: 60%;
+}
+
+@keyframes bt-pulse {
+  0%, 100% { opacity: .4; }
+  50%       { opacity: .8; }
+}
+
+/* ─── PRESET AMOUNTS ──────────────────────────────────────────── */
+.bt-preset-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.bt-preset {
+  position: relative;
+  padding: 13px 8px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(255,255,255,.1);
+  background: rgba(15,23,42,.7);
+  color: #94a3b8;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: all .18s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.bt-preset:hover {
+  border-color: rgba(96,165,250,.4);
+  background: rgba(59,130,246,.1);
+  color: #e2e8f0;
+}
+
+.bt-preset--active {
+  background: linear-gradient(135deg, rgba(37,99,235,.25), rgba(124,58,237,.2));
+  border-color: #3b82f6;
+  color: #93c5fd;
+}
+
+.bt-preset-check {
+  color: #60a5fa;
+  flex-shrink: 0;
+}
+
+/* Custom amount */
+.bt-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.bt-custom-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.bt-custom-input {
+  width: 100%;
+  background: rgba(15,23,42,.8);
+  border: 1.5px solid rgba(255,255,255,.1);
+  border-radius: 10px;
+  color: #f1f5f9;
+  padding: 12px 48px 12px 14px;
+  font-size: 16px;
+  font-weight: 700;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color .2s, box-shadow .2s;
+}
+
+.bt-custom-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,.18);
+}
+
+.bt-custom-input::placeholder { color: #475569; }
+
+.bt-custom-suffix {
+  position: absolute;
+  right: 14px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #475569;
+  pointer-events: none;
+}
+
+/* Bonus hint */
+.bt-bonus-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #64748b;
+  background: rgba(16,185,129,.06);
+  border: 1px solid rgba(16,185,129,.15);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.bt-bonus-icon { color: #34d399; flex-shrink: 0; }
+.bt-bonus-val  { color: #34d399; }
+
+/* ─── PAYMENT METHOD ──────────────────────────────────────────── */
+.bt-method-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bt-method {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255,255,255,.1);
+  background: rgba(15,23,42,.6);
+  cursor: pointer;
+  text-align: left;
+  transition: all .18s;
+  width: 100%;
+}
+
+.bt-method:hover:not(:disabled) {
+  border-color: rgba(96,165,250,.3);
+  background: rgba(30,41,59,.9);
+}
+
+.bt-method--active {
+  box-shadow: 0 2px 12px rgba(0,0,0,.2);
+}
+
+.bt-method-emoji {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.bt-method-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #cbd5e1;
+  flex: 1;
+}
+
+.bt-method-check {
+  flex-shrink: 0;
+}
+
+/* ─── SUMMARY SIDEBAR ─────────────────────────────────────────── */
+.bt-summary-wrap {
+  position: sticky;
+  top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.bt-summary {
+  background: rgba(30,41,59,.7);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 18px;
+  padding: 24px;
+  backdrop-filter: blur(12px);
+}
+
+.bt-summary-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin-bottom: 18px;
+  letter-spacing: -.01em;
+}
+
+/* Balance box */
+.bt-balance-box {
+  background: linear-gradient(135deg, rgba(37,99,235,.12), rgba(124,58,237,.1));
+  border: 1px solid rgba(59,130,246,.2);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+}
+
+.bt-balance-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin: 0 0 6px;
+}
+
+.bt-balance-val {
+  font-size: 22px;
+  font-weight: 800;
+  color: #60a5fa;
+  margin: 0 0 4px;
+  letter-spacing: -.02em;
+}
+
+.bt-balance-note {
+  font-size: 11px;
+  color: #475569;
+  margin: 0;
+}
+
+.bt-sum-divider {
+  height: 1px;
+  background: rgba(255,255,255,.06);
+  margin: 16px 0;
+}
+
+/* Detail rows */
+.bt-sum-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bt-sum-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+
+.bt-sum-key {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #64748b;
+}
+
+.bt-sum-val {
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+.bt-sum-free {
+  color: #34d399;
+}
+
+/* Total */
+.bt-sum-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+.bt-sum-amount {
+  font-size: 22px;
+  font-weight: 800;
+  color: #60a5fa;
+  letter-spacing: -.02em;
+}
+
+/* Submit button */
+.bt-submit-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px;
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity .2s, transform .2s, box-shadow .2s;
+  box-shadow: 0 4px 16px rgba(37,99,235,.3);
+  letter-spacing: .01em;
+}
+
+.bt-submit-btn:hover:not(.bt-submit-btn--disabled) {
+  opacity: .92;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(37,99,235,.4);
+}
+
+.bt-submit-btn--disabled {
+  opacity: .35;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.bt-sum-note {
+  margin-top: 12px;
+  font-size: 11.5px;
+  color: #475569;
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* Spinner */
+.bt-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,.25);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: bt-spin .7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes bt-spin { to { transform: rotate(360deg); } }
+
+/* Benefits card */
+.bt-benefits {
+  background: rgba(30,41,59,.5);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 14px;
+  padding: 18px 20px;
+}
+
+.bt-benefits-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #94a3b8;
+  margin: 0 0 12px;
+}
+
+.bt-benefits-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.bt-benefits-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: #64748b;
+}
+
+.bt-benefit-icon {
+  color: #34d399;
+  flex-shrink: 0;
+}
+
+/* custom amount label */
+.bt-custom-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ─── RESPONSIVE ──────────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .bt-layout {
+    grid-template-columns: 1fr;
+    padding: 0 16px;
+  }
+
+  .bt-summary-wrap {
+    position: static;
+    order: -1;
+  }
+
+  .bt-page-header { padding: 24px 20px 20px; }
+  .bt-page-title  { font-size: 1.5rem; }
+}
+
+@media (max-width: 480px) {
+  .bt-preset-grid { grid-template-columns: repeat(2, 1fr); }
 }

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "rT71W80jceM=",
+  "dgSpecHash": "gCxWBbTkDWg=",
   "success": true,
-  "projectFilePath": "D:\\EXE\\SportBookingPlatform\\SportBooking.Application\\SportBooking.Application.csproj",
+  "projectFilePath": "D:\\SportSG-main\\EXE202\\SportBookingPlatform\\SportBooking.Application\\SportBooking.Application.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\admin\\.nuget\\packages\\automapper\\13.0.1\\automapper.13.0.1.nupkg.sha512",
     "C:\\Users\\admin\\.nuget\\packages\\bcrypt.net-next\\4.0.3\\bcrypt.net-next.4.0.3.nupkg.sha512",
@@ -26,9 +26,9 @@
       "code": "NU1903",
       "level": "Warning",
       "message": "Package 'AutoMapper' 13.0.1 has a known high severity vulnerability, https://github.com/advisories/GHSA-rvv3-g6hj-g44x",
-      "projectPath": "D:\\EXE\\SportBookingPlatform\\SportBooking.Application\\SportBooking.Application.csproj",
+      "projectPath": "D:\\SportSG-main\\EXE202\\SportBookingPlatform\\SportBooking.Application\\SportBooking.Application.csproj",
       "warningLevel": 1,
-      "filePath": "D:\\EXE\\SportBookingPlatform\\SportBooking.Application\\SportBooking.Application.csproj",
+      "filePath": "D:\\SportSG-main\\EXE202\\SportBookingPlatform\\SportBooking.Application\\SportBooking.Application.csproj",
       "libraryId": "AutoMapper",
       "targetGraphs": [
         "net9.0"

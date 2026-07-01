@@ -17,6 +17,7 @@ const Register = ({ onSwitchToLogin }) => {
     const [password,  setPassword]  = useState('');
     const [showPwd,   setShowPwd]   = useState(false);
     const [agreed,    setAgreed]    = useState(false);
+    const [googleLoading, setGoogleLoading] = useState(false);
     const navigate = useNavigate();
 
     const validate = () => {
@@ -55,6 +56,8 @@ const Register = ({ onSwitchToLogin }) => {
 
     const handleGoogleRegister = async (e) => {
         e.preventDefault();
+        if (googleLoading) return;
+        setGoogleLoading(true);
         try {
             const provider = new GoogleAuthProvider();
             const result   = await signInWithPopup(auth, provider);
@@ -86,10 +89,23 @@ const Register = ({ onSwitchToLogin }) => {
                 navigate(roleToPath[data.user?.role] || '/home');
             } else {
                 const err = await res.json().catch(() => ({}));
-                toast.error(err.message || err.title || 'Đăng ký Google thất bại.');
+                toast.error(err.detail || err.message || err.title || 'Đăng ký Google thất bại.');
             }
         } catch (err) {
+            if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
+                return;
+            }
+            if (err.code === 'auth/popup-blocked') {
+                toast.error('Trình duyệt đã chặn popup đăng nhập. Vui lòng cho phép popup và thử lại.');
+                return;
+            }
+            if (err.code === 'auth/network-request-failed') {
+                toast.error('Lỗi mạng khi đăng nhập Google. Vui lòng kiểm tra kết nối và thử lại.');
+                return;
+            }
             toast.error('Lỗi: ' + err.message);
+        } finally {
+            setGoogleLoading(false);
         }
     };
 
@@ -102,8 +118,8 @@ const Register = ({ onSwitchToLogin }) => {
             </p>
 
             <div className="sg-social-btns">
-                <button className="sg-social-btn" type="button" onClick={handleGoogleRegister}>
-                    <FcGoogle size={20} /> Đăng ký với Google
+                <button className="sg-social-btn" type="button" onClick={handleGoogleRegister} disabled={googleLoading}>
+                    <FcGoogle size={20} /> {googleLoading ? 'Đang xử lý...' : 'Đăng ký với Google'}
                 </button>
             </div>
 

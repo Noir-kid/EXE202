@@ -40,7 +40,7 @@ public class CourtController(IUnitOfWork uow, ILogger<CourtController> logger) :
                 c.CourtId, c.Name, c.Description, c.BasePrice,
                 ImageUrl   = c.Images.Where(i => i.IsPrimary).Select(i => i.Url).FirstOrDefault()
                              ?? c.Images.OrderBy(i => i.SortOrder).Select(i => i.Url).FirstOrDefault(),
-                c.Status, c.SportTypeId,
+                c.Status, c.SportTypeId, c.BranchId,
                 SportName  = c.SportType.Name,
                 BranchName = c.Branch.Name,
                 BranchCity = c.Branch.City,

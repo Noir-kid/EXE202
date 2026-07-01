@@ -66,11 +66,25 @@ const TimeSlotManagement = () => {
     };
 
     const dgSx = {
-        border:'none',
-        '& .MuiDataGrid-cell':           { borderBottom:`1px solid ${colors.primary[300]}` },
-        '& .MuiDataGrid-columnHeaders':  { background:colors.blueAccent[700], borderBottom:'none' },
-        '& .MuiDataGrid-virtualScroller':{ background:colors.primary[400] },
-        '& .MuiDataGrid-footerContainer':{ background:colors.blueAccent[700], borderTop:'none' },
+        border: 'none',
+        borderRadius: 2,
+        overflow: 'hidden',
+        '& .MuiDataGrid-cell':          { borderBottom: 'none', color: colors.grey[100] },
+        '& .MuiDataGrid-row':           { borderBottom: `1px solid rgba(148,163,184,0.07)` },
+        '& .MuiDataGrid-row.row-even':  { background: colors.bg.card },
+        '& .MuiDataGrid-row.row-odd':   { background: colors.bg.secondary },
+        '& .MuiDataGrid-row:hover':     { background: `${colors.bg.cardHover} !important` },
+        '& .MuiDataGrid-columnHeaders': { background: colors.blueAccent[800], borderBottom: 'none' },
+        '& .MuiDataGrid-columnHeaderTitle': {
+            fontWeight: 700, fontSize: '0.75rem', letterSpacing: '0.06em',
+            textTransform: 'uppercase', color: colors.blueAccent[200],
+        },
+        '& .MuiDataGrid-virtualScroller':  { background: colors.bg.secondary },
+        '& .MuiDataGrid-footerContainer':  { background: colors.blueAccent[800], borderTop: 'none' },
+        '& .MuiTablePagination-root':      { color: colors.grey[200] },
+        '& .MuiTablePagination-selectIcon':{ color: colors.grey[200] },
+        '& .MuiDataGrid-sortIcon':         { color: colors.blueAccent[300] },
+        '& .MuiDataGrid-menuIconButton':   { color: colors.grey[300] },
     };
 
     const columns = [
@@ -118,11 +132,12 @@ const TimeSlotManagement = () => {
             <Head title="Đặt sân" subtitle="Quản lý lịch đặt sân"/>
             <Box height="75vh" mt={2} sx={dgSx}>
                 <DataGrid
-                    rows={rows} columns={columns} loading={loading}
+                    rows={rows} columns={columns} loading={loading} rowHeight={52} disableRowSelectionOnClick
                     rowCount={total} paginationMode="server"
                     paginationModel={paginationModel}
                     onPaginationModelChange={setPaginationModel}
                     pageSizeOptions={[25,50,100]}
+                    getRowClassName={p => p.indexRelativeToCurrentPage % 2 === 0 ? 'row-even' : 'row-odd'}
                 />
             </Box>
         </Box>

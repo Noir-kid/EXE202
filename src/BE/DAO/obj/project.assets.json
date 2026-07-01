@@ -4129,11 +4129,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\EXE\\src\\BE\\DAO\\DAO.csproj",
+      "projectUniqueName": "D:\\SportSG-main\\EXE202\\src\\BE\\DAO\\DAO.csproj",
       "projectName": "DAO",
-      "projectPath": "D:\\EXE\\src\\BE\\DAO\\DAO.csproj",
+      "projectPath": "D:\\SportSG-main\\EXE202\\src\\BE\\DAO\\DAO.csproj",
       "packagesPath": "C:\\Users\\admin\\.nuget\\packages\\",
-      "outputPath": "D:\\EXE\\src\\BE\\DAO\\obj\\",
+      "outputPath": "D:\\SportSG-main\\EXE202\\src\\BE\\DAO\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -4155,8 +4155,8 @@
           "framework": "net8.0",
           "targetAlias": "net8.0",
           "projectReferences": {
-            "D:\\EXE\\src\\BE\\BusinessObj\\BusinessObj.csproj": {
-              "projectPath": "D:\\EXE\\src\\BE\\BusinessObj\\BusinessObj.csproj"
+            "D:\\SportSG-main\\EXE202\\src\\BE\\BusinessObj\\BusinessObj.csproj": {
+              "projectPath": "D:\\SportSG-main\\EXE202\\src\\BE\\BusinessObj\\BusinessObj.csproj"
             }
           }
         }

@@ -113,7 +113,7 @@ public class PaymentController(
         var gatewayRequest = new PaymentRequest(
             BookingId : booking.BookingId,
             Amount    : booking.TotalAmount,
-            OrderInfo : $"Dat san {booking.Court.Name} ngay {booking.BookingDate:dd/MM/yyyy}",
+            OrderInfo : $"Dat san ngay {booking.BookingDate:dd-MM-yyyy} BookingId {booking.BookingId:N}",
             ReturnUrl : req.ReturnUrl,
             IpAddress : HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1");
 
@@ -255,62 +255,62 @@ public class PaymentController(
         var pendingPayment = await uow.Payments.FirstOrDefaultAsync(
             p => p.BookingId == bookingId && p.Status == PaymentStatus.Pending && p.Method == method, ct);
 
-        await uow.BeginTransactionAsync(ct);
+        var partner = booking.Court.Branch.Partner;
+        var commissionRate = partner?.CommissionRate ?? 0m;
+        var commissionAmt  = Math.Round(amount * commissionRate / 100, 2);
+
         try
         {
-            // Cập nhật Payment
-            if (pendingPayment is not null)
+            await uow.ExecuteInTransactionAsync(async innerCt =>
             {
-                pendingPayment.Status         = PaymentStatus.Success;
-                pendingPayment.TransactionRef = transactionId;
-                pendingPayment.PaidAt         = DateTime.UtcNow;
-                pendingPayment.GatewayResponse = null; // clear stored URL
-                uow.Payments.Update(pendingPayment);
-            }
-            else
-            {
-                // Payment tạo từ callback (edge case: payment record bị mất)
-                pendingPayment = new Payment
+                // Cập nhật Payment
+                if (pendingPayment is not null)
                 {
-                    BookingId      = bookingId,
-                    UserId         = booking.CustomerId,
-                    Amount         = amount,
-                    Method         = method,
-                    Status         = PaymentStatus.Success,
-                    TransactionRef = transactionId,
-                    PaidAt         = DateTime.UtcNow,
+                    pendingPayment.Status         = PaymentStatus.Success;
+                    pendingPayment.TransactionRef = transactionId;
+                    pendingPayment.PaidAt         = DateTime.UtcNow;
+                    pendingPayment.GatewayResponse = null; // clear stored URL
+                    uow.Payments.Update(pendingPayment);
+                }
+                else
+                {
+                    // Payment tạo từ callback (edge case: payment record bị mất)
+                    pendingPayment = new Payment
+                    {
+                        BookingId      = bookingId,
+                        UserId         = booking.CustomerId,
+                        Amount         = amount,
+                        Method         = method,
+                        Status         = PaymentStatus.Success,
+                        TransactionRef = transactionId,
+                        PaidAt         = DateTime.UtcNow,
+                    };
+                    await uow.Payments.AddAsync(pendingPayment, innerCt);
+                }
+
+                // Cập nhật Booking → Confirmed
+                booking.Status = BookingStatus.Confirmed;
+                uow.Bookings.Update(booking);
+
+                // Tạo CommissionLedger
+                var ledger = new CommissionLedger
+                {
+                    PaymentId      = pendingPayment.PaymentId,
+                    PartnerId      = booking.Court.Branch.PartnerId,
+                    GrossAmount    = amount,
+                    CommissionRate = commissionRate,
+                    CommissionAmt  = commissionAmt,
+                    NetAmount      = amount - commissionAmt,
                 };
-                await uow.Payments.AddAsync(pendingPayment, ct);
-            }
+                await uow.CommissionLedger.AddAsync(ledger, innerCt);
 
-            // Cập nhật Booking → Confirmed
-            booking.Status = BookingStatus.Confirmed;
-            uow.Bookings.Update(booking);
-
-            // Tạo CommissionLedger
-            var partner = booking.Court.Branch.Partner;
-            var commissionRate = partner?.CommissionRate ?? 0m;
-            var commissionAmt  = Math.Round(amount * commissionRate / 100, 2);
-
-            var ledger = new CommissionLedger
-            {
-                PaymentId      = pendingPayment.PaymentId,
-                PartnerId      = booking.Court.Branch.PartnerId,
-                GrossAmount    = amount,
-                CommissionRate = commissionRate,
-                CommissionAmt  = commissionAmt,
-                NetAmount      = amount - commissionAmt,
-            };
-            await uow.CommissionLedger.AddAsync(ledger, ct);
-
-            await uow.SaveChangesAsync(ct);
-            await uow.CommitAsync(ct);
+                await uow.SaveChangesAsync(innerCt);
+            }, ct);
 
             logger.LogInformation("Booking {Id} confirmed. Commission: {Amt}", bookingId, commissionAmt);
         }
         catch (Exception ex)
         {
-            await uow.RollbackAsync(ct);
             logger.LogError(ex, "Failed to confirm booking {Id}", bookingId);
             return;
         }

@@ -9,6 +9,8 @@ import { toast } from "react-toastify";
 import { jwtDecode } from 'jwt-decode';
 import { fetchWithAuth } from "../../Components/fetchWithAuth/fetchWithAuth";
 import { API_BASE } from '../../config';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined';
 
 const BadmintonCourtHours = () => {
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -79,38 +81,56 @@ const BadmintonCourtHours = () => {
 
     return (
         <Box m="20px">
-            <Head title="GIỜ HOẠT ĐỘNG" subtitle="Chỉnh sửa giờ mở cửa của chi nhánh"/>
+            <Head title="Giờ hoạt động" subtitle="Chỉnh sửa giờ mở cửa của chi nhánh"/>
             <Box className="timeslotwork-root">
-                <Typography variant="h5" className="timeslotwork-heading">Giờ hoạt động</Typography>
+                <Typography variant="h5" className="timeslotwork-heading">
+                    <ScheduleOutlinedIcon sx={{ fontSize: 22, mr: 1, verticalAlign: 'middle', color: '#3b82f6' }} />
+                    Khung giờ hoạt động
+                </Typography>
+                <Typography variant="body2" className="timeslotwork-caption">
+                    {branch?.name ? `Chi nhánh: ${branch.name}` : 'Thời gian sân mở cửa đón khách trong ngày'}
+                </Typography>
+
                 {workingHours.start && workingHours.end ? (
-                    <Typography variant="h6" className="timeslotwork-hoursText">
-                        {`Mở: ${workingHours.start} — Đóng: ${workingHours.end}`}
-                    </Typography>
+                    <Box className="timeslotwork-hoursCard">
+                        <Box className="timeslotwork-hoursBlock">
+                            <span className="timeslotwork-hoursLabel">Mở cửa</span>
+                            <Typography variant="h4" className="timeslotwork-hoursValue">{workingHours.start}</Typography>
+                        </Box>
+                        <span className="timeslotwork-hoursDivider">→</span>
+                        <Box className="timeslotwork-hoursBlock">
+                            <span className="timeslotwork-hoursLabel">Đóng cửa</span>
+                            <Typography variant="h4" className="timeslotwork-hoursValue">{workingHours.end}</Typography>
+                        </Box>
+                    </Box>
                 ) : (
-                    <Typography variant="h6" className="timeslotwork-hoursText">Chưa thiết lập</Typography>
+                    <Typography variant="body1" className="timeslotwork-emptyText">Chưa thiết lập giờ hoạt động.</Typography>
                 )}
-                <Button variant="contained" color="primary" onClick={handleEditClick}
+
+                <Button variant="contained" startIcon={<EditOutlinedIcon/>} onClick={handleEditClick}
                     className="timeslotwork-editButton" disabled={!myBranchId}>
                     Chỉnh sửa giờ
                 </Button>
 
-                <Dialog open={dialogOpen} onClose={handleCancel}>
-                    <DialogTitle style={{color:'black'}}>Chỉnh sửa giờ hoạt động</DialogTitle>
-                    <DialogContent className="timeslotwork-dialogContent">
-                        <Typography style={{color:'black',marginBottom:8}}>Giờ mở cửa</Typography>
-                        <Select fullWidth value={start} onChange={e => setStart(e.target.value)}
-                            style={{color:'black',marginBottom:16}}>
-                            {generateHourOptions()}
-                        </Select>
-                        <Typography style={{color:'black',marginBottom:8}}>Giờ đóng cửa</Typography>
-                        <Select fullWidth value={end} onChange={e => setEnd(e.target.value)}
-                            style={{color:'black'}}>
-                            {generateHourOptions()}
-                        </Select>
+                <Dialog open={dialogOpen} onClose={handleCancel} maxWidth="xs" fullWidth>
+                    <DialogTitle>Chỉnh sửa giờ hoạt động</DialogTitle>
+                    <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
+                        <Box>
+                            <Typography variant="body2" color="text.secondary" mb={1}>Giờ mở cửa</Typography>
+                            <Select fullWidth size="small" value={start} onChange={e => setStart(e.target.value)}>
+                                {generateHourOptions()}
+                            </Select>
+                        </Box>
+                        <Box>
+                            <Typography variant="body2" color="text.secondary" mb={1}>Giờ đóng cửa</Typography>
+                            <Select fullWidth size="small" value={end} onChange={e => setEnd(e.target.value)}>
+                                {generateHourOptions()}
+                            </Select>
+                        </Box>
                     </DialogContent>
-                    <DialogActions className="timeslotwork-dialogActions">
-                        <Button onClick={handleCancel} color="primary">Hủy</Button>
-                        <Button onClick={handleSave} color="primary">Lưu</Button>
+                    <DialogActions>
+                        <Button onClick={handleCancel}>Hủy</Button>
+                        <Button variant="contained" onClick={handleSave}>Lưu</Button>
                     </DialogActions>
                 </Dialog>
             </Box>

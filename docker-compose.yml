@@ -31,6 +31,14 @@ services:
       Jwt__Key: ${JWT__KEY:?set JWT__KEY in your local .env file}
       Jwt__Issuer: ${JWT__ISSUER:-SportSG}
       Jwt__Audience: ${JWT__AUDIENCE:-SportSG-Clients}
+      VnPay__TmnCode: ${VNPAY__TMNCODE:-}
+      VnPay__HashSecret: ${VNPAY__HASHSECRET:-}
+      VnPay__BaseUrl: ${VNPAY__BASEURL:-https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}
+      VnPay__IpnUrl: ${VNPAY__IPNURL:-}
+      MoMo__PartnerCode: ${MOMO__PARTNERCODE:-}
+      MoMo__AccessKey: ${MOMO__ACCESSKEY:-}
+      MoMo__SecretKey: ${MOMO__SECRETKEY:-}
+      MoMo__Endpoint: ${MOMO__ENDPOINT:-https://test-payment.momo.vn/v2/gateway/api/create}
     ports:
       - "8081:8080"
     depends_on:

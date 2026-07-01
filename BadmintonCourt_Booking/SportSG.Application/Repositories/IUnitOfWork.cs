@@ -40,7 +40,11 @@ public interface IUnitOfWork : IAsyncDisposable
     IRepository<Banner>          Banners          { get; }
 
     Task<int> SaveChangesAsync(CancellationToken ct = default);
-    Task BeginTransactionAsync(CancellationToken ct = default);
-    Task CommitAsync(CancellationToken ct = default);
-    Task RollbackAsync(CancellationToken ct = default);
+
+    /// <summary>
+    /// Chạy <paramref name="operation"/> trong 1 transaction, tương thích với
+    /// SqlServerRetryingExecutionStrategy (EnableRetryOnFailure). Không dùng
+    /// Database.BeginTransactionAsync() trực tiếp vì nó không hỗ trợ retry strategy.
+    /// </summary>
+    Task ExecuteInTransactionAsync(Func<CancellationToken, Task> operation, CancellationToken ct = default);
 }

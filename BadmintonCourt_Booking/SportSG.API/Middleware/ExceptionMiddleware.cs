@@ -33,7 +33,7 @@ public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddlewa
             ForbiddenException fe => (HttpStatusCode.Forbidden,     "Forbidden",      fe.Message),
             BusinessException  be => (HttpStatusCode.UnprocessableEntity, "Business rule violation", be.Message),
             ConflictException  ce => (HttpStatusCode.Conflict,      "Conflict",       ce.Message),
-            UnauthorizedAccessException => (HttpStatusCode.Unauthorized, "Unauthorized", "Authentication required."),
+            UnauthorizedAccessException uae => (HttpStatusCode.Unauthorized, "Unauthorized", uae.Message),
 
             _ => (HttpStatusCode.InternalServerError, "Internal server error", "An unexpected error occurred.")
         };

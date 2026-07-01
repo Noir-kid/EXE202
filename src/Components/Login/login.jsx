@@ -21,6 +21,7 @@ const Login = ({ onSwitchToRegister }) => {
     const [email, setEmail]       = useState('');
     const [password, setPassword] = useState('');
     const [showPwd, setShowPwd]   = useState(false);
+    const [googleLoading, setGoogleLoading] = useState(false);
     const navigate = useNavigate();
 
     const saveAndRedirect = (data) => {
@@ -53,6 +54,10 @@ const Login = ({ onSwitchToRegister }) => {
 
     const handleGoogleLogin = async (e) => {
         e.preventDefault();
+        // Chặn double-click: nếu 1 popup đang mở, request thứ 2 sẽ bị Firebase
+        // huỷ với lỗi "auth/cancelled-popup-request".
+        if (googleLoading) return;
+        setGoogleLoading(true);
         try {
             const provider = new GoogleAuthProvider();
             const result   = await signInWithPopup(auth, provider);
@@ -76,10 +81,24 @@ const Login = ({ onSwitchToRegister }) => {
                 saveAndRedirect(await res.json());
             } else {
                 const err = await res.json().catch(() => ({}));
-                toast.error(err.message || err.title || 'Đăng nhập Google thất bại.');
+                toast.error(err.detail || err.message || err.title || 'Đăng nhập Google thất bại.');
             }
         } catch (err) {
+            // Người dùng tự đóng popup / bấm huỷ — không phải lỗi thật, đừng làm phiền.
+            if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
+                return;
+            }
+            if (err.code === 'auth/popup-blocked') {
+                toast.error('Trình duyệt đã chặn popup đăng nhập. Vui lòng cho phép popup và thử lại.');
+                return;
+            }
+            if (err.code === 'auth/network-request-failed') {
+                toast.error('Lỗi mạng khi đăng nhập Google. Vui lòng kiểm tra kết nối và thử lại.');
+                return;
+            }
             toast.error('Lỗi: ' + err.message);
+        } finally {
+            setGoogleLoading(false);
         }
     };
 
@@ -92,8 +111,8 @@ const Login = ({ onSwitchToRegister }) => {
             </p>
 
             <div className="sg-social-btns">
-                <button className="sg-social-btn" type="button" onClick={handleGoogleLogin}>
-                    <FcGoogle size={20} /> Đăng nhập với Google
+                <button className="sg-social-btn" type="button" onClick={handleGoogleLogin} disabled={googleLoading}>
+                    <FcGoogle size={20} /> {googleLoading ? 'Đang đăng nhập...' : 'Đăng nhập với Google'}
                 </button>
             </div>
 
