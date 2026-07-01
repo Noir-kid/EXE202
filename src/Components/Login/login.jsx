@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { MdEmail, MdLock, MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import { FcGoogle } from 'react-icons/fc';
 import { auth } from '../googleSignin/config';
-import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { signInWithRedirect, GoogleAuthProvider } from 'firebase/auth';
 import { API_BASE } from '../../config';
 
 const roleToPath = {
@@ -51,51 +51,16 @@ const Login = ({ onSwitchToRegister }) => {
         }
     };
 
-    const handleGoogleLogin = async (e) => {
+    const handleGoogleLogin = (e) => {
         e.preventDefault();
         if (googleLoading) return;
         setGoogleLoading(true);
-        try {
-            const provider = new GoogleAuthProvider();
-            const result   = await signInWithPopup(auth, provider);
-
-            // Lấy Google OAuth id_token (không phải Firebase token)
-            const credential = GoogleAuthProvider.credentialFromResult(result);
-            const idToken    = credential?.idToken;
-
-            if (!idToken) {
-                toast.error('Không lấy được Google token. Vui lòng thử lại.');
-                return;
-            }
-
-            const res = await fetch(`${API_BASE}/auth/google`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ idToken }),
-            });
-
-            if (res.ok) {
-                saveAndRedirect(await res.json());
-            } else {
-                const err = await res.json().catch(() => ({}));
-                toast.error(err.detail || err.message || err.title || 'Đăng nhập Google thất bại.');
-            }
-        } catch (err) {
-            if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
-                return;
-            }
-            if (err.code === 'auth/popup-blocked') {
-                toast.error('Trình duyệt đã chặn popup đăng nhập. Vui lòng cho phép popup và thử lại.');
-                return;
-            }
-            if (err.code === 'auth/network-request-failed') {
-                toast.error('Lỗi mạng khi đăng nhập Google. Vui lòng kiểm tra kết nối và thử lại.');
-                return;
-            }
-            toast.error('Lỗi: ' + err.message);
-        } finally {
+        const provider = new GoogleAuthProvider();
+        // Redirect tới Google — kết quả được xử lý bởi useGoogleRedirectResult ở App.js
+        signInWithRedirect(auth, provider).catch((err) => {
             setGoogleLoading(false);
-        }
+            toast.error('Lỗi: ' + err.message);
+        });
     };
 
     return (
