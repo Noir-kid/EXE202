@@ -44,6 +44,10 @@ import AnimatedIcons from './Components/AnimatedIcons/animatedIcons';
 import OwnerStaff from './Scene/ownerStaff';
 import StaffBooking from './Scene/staffBooking';
 import Partner from './Scene/partner';
+import Holiday from './Scene/holiday';
+import Maintenance from './Scene/maintenance';
+import Favorite from './Scene/favorite';
+import Notification from './Scene/notification';
 
 // Handles server-side Google OAuth redirect: /auth/callback?accessToken=...&refreshToken=...
 const AuthCallback = () => {
@@ -146,11 +150,15 @@ const logout = () => {
             <Route path="discount" element={<Discount />} />
             <Route path="timeSlot" element={<SlotManagement />} />
             <Route path="timeManage" element={<BadmintonCourtHours />} />
+            <Route path="holiday" element={<Holiday />} />
+            <Route path="maintenance" element={<Maintenance />} />
             <Route path="payment" element={<Payment />} />
             <Route path="bar" element={<Bar />} />
             <Route path="line" element={<Line />} />
             <Route path="feedback" element={<Feedback />} />
             <Route path="pie" element={<Pie />} />
+            <Route path="favorite" element={<Favorite />} />
+            <Route path="notification" element={<Notification />} />
           </Route>
 
           {/* Owner (Chủ sân): Quản lý sân của mình — branch-scoped */}
@@ -162,11 +170,15 @@ const logout = () => {
             <Route path="court" element={<Court />} />
             <Route path="timeSlot" element={<SlotManagement />} />
             <Route path="timeManage" element={<BadmintonCourtHours />} />
+            <Route path="holiday" element={<Holiday />} />
+            <Route path="maintenance" element={<Maintenance />} />
             <Route path="payment" element={<Payment />} />
             <Route path="bar" element={<Bar />} />
             <Route path="line" element={<Line />} />
             <Route path="staffFeedback" element={<StaffFeedback />} />
             <Route path="pie" element={<Pie />} />
+            <Route path="favorite" element={<Favorite />} />
+            <Route path="notification" element={<Notification />} />
           </Route>
 
           {/* Staff (Nhân viên sân): Hỗ trợ vận hành — limited access */}
@@ -176,6 +188,7 @@ const logout = () => {
             <Route path="booking" element={<StaffBooking />} />
             <Route path="court" element={<Court />} />
             <Route path="staffFeedback" element={<StaffFeedback />} />
+            <Route path="favorite" element={<Favorite />} />
           </Route>
 
           <Route path="/createFeedbackModal" element={<CreateFeedbackModal />} />

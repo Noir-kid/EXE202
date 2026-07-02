@@ -69,6 +69,7 @@ public class CourtController(IUnitOfWork uow, ILogger<CourtController> logger) :
             .Include(c => c.Branch)
             .Include(c => c.SportType)
             .Include(c => c.Images)
+            .Include(c => c.Facilities)
             .AsQueryable();
 
         q = role switch
@@ -90,6 +91,7 @@ public class CourtController(IUnitOfWork uow, ILogger<CourtController> logger) :
                 PartnerId  = c.Branch.PartnerId,
                 ImageUrl   = c.Images.Where(i => i.IsPrimary).Select(i => i.Url).FirstOrDefault()
                              ?? c.Images.OrderBy(i => i.SortOrder).Select(i => i.Url).FirstOrDefault(),
+                Facilities = c.Facilities.Select(f => new { f.CourtFacilityId, f.Name, f.Icon }),
             })
             .ToListAsync(ct);
 
@@ -308,6 +310,128 @@ public class CourtController(IUnitOfWork uow, ILogger<CourtController> logger) :
 
         return NoContent();
     }
+
+    // ── Facilities ───────────────────────────────────────────────────────
+
+    [HttpPost("{id:guid}/facilities")]
+    [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.PartnerAdmin},{Roles.BranchManager}")]
+    public async Task<IActionResult> AddFacility(Guid id, [FromBody] AddCourtFacilityRequest req, CancellationToken ct)
+    {
+        await TenantGuard.RequireCourtAccessAsync(HttpContext, id, uow, ct);
+
+        var facility = new CourtFacility
+        {
+            CourtId = id,
+            Name    = req.Name,
+            Icon    = req.Icon,
+        };
+
+        await uow.CourtFacilities.AddAsync(facility, ct);
+        await uow.SaveChangesAsync(ct);
+
+        return Ok(new { facility.CourtFacilityId, facility.Name, facility.Icon });
+    }
+
+    [HttpDelete("{id:guid}/facilities/{facilityId:int}")]
+    [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.PartnerAdmin},{Roles.BranchManager}")]
+    public async Task<IActionResult> RemoveFacility(Guid id, int facilityId, CancellationToken ct)
+    {
+        await TenantGuard.RequireCourtAccessAsync(HttpContext, id, uow, ct);
+
+        var facility = await uow.CourtFacilities.FirstOrDefaultAsync(
+            f => f.CourtFacilityId == facilityId && f.CourtId == id, ct)
+            ?? throw new NotFoundException($"Tiện ích {facilityId} không tồn tại.");
+
+        uow.CourtFacilities.Remove(facility);
+        await uow.SaveChangesAsync(ct);
+
+        return NoContent();
+    }
+
+    // ── Pricing rules ────────────────────────────────────────────────────
+
+    [HttpGet("{id:guid}/pricing-rules")]
+    [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.PartnerAdmin},{Roles.BranchManager}")]
+    public async Task<IActionResult> GetPricingRules(Guid id, CancellationToken ct)
+    {
+        await TenantGuard.RequireCourtAccessAsync(HttpContext, id, uow, ct);
+
+        var rules = await uow.CourtPricingRules.Query()
+            .Where(r => r.CourtId == id)
+            .OrderBy(r => r.DayOfWeek).ThenBy(r => r.StartTime)
+            .Select(r => new { r.RuleId, r.DayOfWeek, r.StartTime, r.EndTime, r.Price, r.Label, r.IsActive })
+            .ToListAsync(ct);
+
+        return Ok(rules);
+    }
+
+    [HttpPost("{id:guid}/pricing-rules")]
+    [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.PartnerAdmin},{Roles.BranchManager}")]
+    public async Task<IActionResult> AddPricingRule(Guid id, [FromBody] UpsertPricingRuleRequest req, CancellationToken ct)
+    {
+        await TenantGuard.RequireCourtAccessAsync(HttpContext, id, uow, ct);
+
+        if (req.Price <= 0) return BadRequest(new { error = "Giá phải lớn hơn 0." });
+        if (req.StartTime >= req.EndTime) return BadRequest(new { error = "Giờ bắt đầu phải trước giờ kết thúc." });
+
+        var rule = new CourtPricingRule
+        {
+            CourtId   = id,
+            DayOfWeek = req.DayOfWeek,
+            StartTime = req.StartTime,
+            EndTime   = req.EndTime,
+            Price     = req.Price,
+            Label     = req.Label,
+            IsActive  = req.IsActive,
+        };
+
+        await uow.CourtPricingRules.AddAsync(rule, ct);
+        await uow.SaveChangesAsync(ct);
+
+        return Ok(new { rule.RuleId, rule.DayOfWeek, rule.StartTime, rule.EndTime, rule.Price, rule.Label, rule.IsActive });
+    }
+
+    [HttpPut("{id:guid}/pricing-rules/{ruleId:int}")]
+    [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.PartnerAdmin},{Roles.BranchManager}")]
+    public async Task<IActionResult> UpdatePricingRule(Guid id, int ruleId, [FromBody] UpsertPricingRuleRequest req, CancellationToken ct)
+    {
+        await TenantGuard.RequireCourtAccessAsync(HttpContext, id, uow, ct);
+
+        if (req.Price <= 0) return BadRequest(new { error = "Giá phải lớn hơn 0." });
+        if (req.StartTime >= req.EndTime) return BadRequest(new { error = "Giờ bắt đầu phải trước giờ kết thúc." });
+
+        var rule = await uow.CourtPricingRules.FirstOrDefaultAsync(
+            r => r.RuleId == ruleId && r.CourtId == id, ct)
+            ?? throw new NotFoundException($"Quy tắc giá {ruleId} không tồn tại.");
+
+        rule.DayOfWeek = req.DayOfWeek;
+        rule.StartTime = req.StartTime;
+        rule.EndTime   = req.EndTime;
+        rule.Price     = req.Price;
+        rule.Label     = req.Label;
+        rule.IsActive  = req.IsActive;
+
+        uow.CourtPricingRules.Update(rule);
+        await uow.SaveChangesAsync(ct);
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id:guid}/pricing-rules/{ruleId:int}")]
+    [Authorize(Roles = $"{Roles.SuperAdmin},{Roles.PartnerAdmin},{Roles.BranchManager}")]
+    public async Task<IActionResult> DeletePricingRule(Guid id, int ruleId, CancellationToken ct)
+    {
+        await TenantGuard.RequireCourtAccessAsync(HttpContext, id, uow, ct);
+
+        var rule = await uow.CourtPricingRules.FirstOrDefaultAsync(
+            r => r.RuleId == ruleId && r.CourtId == id, ct)
+            ?? throw new NotFoundException($"Quy tắc giá {ruleId} không tồn tại.");
+
+        uow.CourtPricingRules.Remove(rule);
+        await uow.SaveChangesAsync(ct);
+
+        return NoContent();
+    }
 }
 
 // ── Request Records ──────────────────────────────────────────────────────────
@@ -337,4 +461,18 @@ public record AddCourtImageRequest(
     string? PublicId,
     bool IsPrimary = false,
     int SortOrder = 0
+);
+
+public record AddCourtFacilityRequest(
+    string Name,
+    string? Icon
+);
+
+public record UpsertPricingRuleRequest(
+    int? DayOfWeek,
+    TimeOnly StartTime,
+    TimeOnly EndTime,
+    decimal Price,
+    string? Label,
+    bool IsActive = true
 );

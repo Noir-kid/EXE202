@@ -21,6 +21,10 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined';
 import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
 import HandshakeOutlinedIcon from '@mui/icons-material/HandshakeOutlined';
+import EventBusyOutlinedIcon from '@mui/icons-material/EventBusyOutlined';
+import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
+import FavoriteOutlinedIcon from '@mui/icons-material/FavoriteOutlined';
+import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsActiveOutlined';
 
 import logo from '../../Assets/logo.svg';
 
@@ -150,13 +154,17 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                             <NavItem to="/admin/discount" icon={<DiscountIcon sx={{ fontSize: 19 }} />} label="Khuyến mãi" collapsed={collapsed} />
                             <NavItem to="/admin/timeSlot" icon={<AccessAlarmIcon sx={{ fontSize: 19 }} />} label="Khung giờ" collapsed={collapsed} />
                             <NavItem to="/admin/timeManage" icon={<CalendarTodayOutlinedIcon sx={{ fontSize: 19 }} />} label="Lịch sân" collapsed={collapsed} />
+                            <NavItem to="/admin/holiday" icon={<EventBusyOutlinedIcon sx={{ fontSize: 19 }} />} label="Ngày nghỉ" collapsed={collapsed} />
+                            <NavItem to="/admin/maintenance" icon={<BuildOutlinedIcon sx={{ fontSize: 19 }} />} label="Bảo trì sân" collapsed={collapsed} />
                             <NavItem to="/admin/payment" icon={<PaymentIcon sx={{ fontSize: 19 }} />} label="Thanh toán" collapsed={collapsed} />
                             <NavItem to="/admin/feedback" icon={<FeedbackOutlinedIcon sx={{ fontSize: 19 }} />} label="Phản hồi" collapsed={collapsed} />
+                            <NavItem to="/admin/notification" icon={<NotificationsActiveOutlinedIcon sx={{ fontSize: 19 }} />} label="Thông báo" collapsed={collapsed} />
                         </div>
                         <div className="sg-nav-section">
                             {!collapsed && <div className="sg-nav-section-title">Báo cáo</div>}
                             <NavItem to="/admin/bar" icon={<BarChartOutlinedIcon sx={{ fontSize: 19 }} />} label="Biểu đồ cột" collapsed={collapsed} />
                             <NavItem to="/admin/line" icon={<TimelineOutlinedIcon sx={{ fontSize: 19 }} />} label="Biểu đồ đường" collapsed={collapsed} />
+                            <NavItem to="/admin/favorite" icon={<FavoriteOutlinedIcon sx={{ fontSize: 19 }} />} label="Sân yêu thích" collapsed={collapsed} />
                         </div>
                     </>
                 )}
@@ -178,13 +186,17 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                             <NavItem to="/owner/booking" icon={<EventNoteOutlinedIcon sx={{ fontSize: 19 }} />} label="Lịch đặt sân" collapsed={collapsed} />
                             <NavItem to="/owner/timeSlot" icon={<AccessAlarmIcon sx={{ fontSize: 19 }} />} label="Khung giờ" collapsed={collapsed} />
                             <NavItem to="/owner/timeManage" icon={<CalendarTodayOutlinedIcon sx={{ fontSize: 19 }} />} label="Giờ hoạt động" collapsed={collapsed} />
+                            <NavItem to="/owner/holiday" icon={<EventBusyOutlinedIcon sx={{ fontSize: 19 }} />} label="Ngày nghỉ" collapsed={collapsed} />
+                            <NavItem to="/owner/maintenance" icon={<BuildOutlinedIcon sx={{ fontSize: 19 }} />} label="Bảo trì sân" collapsed={collapsed} />
                             <NavItem to="/owner/payment" icon={<PaymentIcon sx={{ fontSize: 19 }} />} label="Thanh toán" collapsed={collapsed} />
                             <NavItem to="/owner/staffFeedback" icon={<FeedbackOutlinedIcon sx={{ fontSize: 19 }} />} label="Phản hồi" collapsed={collapsed} />
+                            <NavItem to="/owner/notification" icon={<NotificationsActiveOutlinedIcon sx={{ fontSize: 19 }} />} label="Thông báo" collapsed={collapsed} />
                         </div>
                         <div className="sg-nav-section">
                             {!collapsed && <div className="sg-nav-section-title">Báo cáo</div>}
                             <NavItem to="/owner/bar" icon={<BarChartOutlinedIcon sx={{ fontSize: 19 }} />} label="Biểu đồ cột" collapsed={collapsed} />
                             <NavItem to="/owner/line" icon={<TimelineOutlinedIcon sx={{ fontSize: 19 }} />} label="Biểu đồ đường" collapsed={collapsed} />
+                            <NavItem to="/owner/favorite" icon={<FavoriteOutlinedIcon sx={{ fontSize: 19 }} />} label="Sân yêu thích" collapsed={collapsed} />
                         </div>
                     </>
                 )}
@@ -201,6 +213,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                             <NavItem to="/staff/booking" icon={<EventNoteOutlinedIcon sx={{ fontSize: 19 }} />} label="Quản lý đặt sân" collapsed={collapsed} />
                             <NavItem to="/staff/court" icon={<ReceiptOutlinedIcon sx={{ fontSize: 19 }} />} label="Sân thể thao" collapsed={collapsed} />
                             <NavItem to="/staff/staffFeedback" icon={<FeedbackOutlinedIcon sx={{ fontSize: 19 }} />} label="Phản hồi" collapsed={collapsed} />
+                            <NavItem to="/staff/favorite" icon={<FavoriteOutlinedIcon sx={{ fontSize: 19 }} />} label="Sân yêu thích" collapsed={collapsed} />
                         </div>
                     </>
                 )}

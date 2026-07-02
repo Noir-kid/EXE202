@@ -127,6 +127,79 @@ public class NotificationController(IUnitOfWork uow, INotificationHub hub) : Con
 
         return Ok(new { notification.NotificationId });
     }
+
+    /// <summary>
+    /// [SuperAdmin] Gửi thông báo tới nhiều user cùng lúc (theo vai trò, mặc định Customer).
+    /// </summary>
+    [HttpPost("broadcast")]
+    [Authorize(Roles = SportSG.Domain.Enums.Roles.SuperAdmin)]
+    public async Task<IActionResult> Broadcast([FromBody] BroadcastNotificationRequest req, CancellationToken ct)
+    {
+        var roleCode = req.Role ?? SportSG.Domain.Enums.Roles.Customer;
+
+        List<Guid> userIds;
+        if (roleCode == SportSG.Domain.Enums.Roles.Customer)
+        {
+            userIds = await uow.Users.Query()
+                .Where(u => !uow.PartnerUserRoles.Query().Any(p => p.UserId == u.UserId))
+                .Select(u => u.UserId)
+                .ToListAsync(ct);
+        }
+        else
+        {
+            userIds = await uow.PartnerUserRoles.Query()
+                .Where(p => p.Role.Code == roleCode)
+                .Select(p => p.UserId)
+                .Distinct()
+                .ToListAsync(ct);
+        }
+
+        if (userIds.Count == 0) return Ok(new { sentCount = 0 });
+
+        var notifications = userIds.Select(uid => new Notification
+        {
+            UserId  = uid,
+            Title   = req.Title,
+            Message = req.Message,
+            Type    = SportSG.Domain.Enums.NotificationType.Info,
+            RefType = "Broadcast",
+        }).ToList();
+
+        await uow.Notifications.AddRangeAsync(notifications, ct);
+        await uow.SaveChangesAsync(ct);
+
+        foreach (var uid in userIds)
+        {
+            await hub.SendToUserAsync(uid, "notification", new { req.Title, req.Message, Type = "Info" }, ct);
+        }
+
+        return Ok(new { sentCount = userIds.Count });
+    }
+
+    /// <summary>
+    /// [Staff/Manager] Lịch sử thông báo đã gửi (tất cả notification hiện đều do admin/staff gửi thủ công).
+    /// </summary>
+    [HttpGet("sent")]
+    [Authorize(Roles = $"{SportSG.Domain.Enums.Roles.SuperAdmin},{SportSG.Domain.Enums.Roles.PartnerAdmin},{SportSG.Domain.Enums.Roles.BranchManager}")]
+    public async Task<IActionResult> GetSent(
+        [FromQuery] int page = 1, [FromQuery] int pageSize = 20, CancellationToken ct = default)
+    {
+        var q = uow.Notifications.Query().Include(n => n.User).OrderByDescending(n => n.CreatedAt);
+
+        var total = await q.CountAsync(ct);
+        var items = await q
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(n => new {
+                n.NotificationId, n.Title, n.Message, n.RefType,
+                n.IsRead, n.CreatedAt,
+                RecipientEmail = n.User.Email,
+                RecipientName  = n.User.FirstName + " " + n.User.LastName,
+            })
+            .ToListAsync(ct);
+
+        return Ok(new { items, total, page, pageSize });
+    }
 }
 
 public record SendNotificationRequest(
@@ -135,4 +208,10 @@ public record SendNotificationRequest(
     string  Message,
     string? RefType = null,
     Guid?   RefId   = null
+);
+
+public record BroadcastNotificationRequest(
+    string  Title,
+    string  Message,
+    string? Role = null
 );

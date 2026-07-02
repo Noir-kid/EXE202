@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import {
     Box, Button, Chip, Dialog, DialogTitle, DialogContent, DialogActions,
     TextField, FormControl, InputLabel, Select, MenuItem, Typography,
-    Grid, Divider, Stack, IconButton,
+    Grid, Divider, Stack, IconButton, Switch, FormControlLabel,
+    Table, TableHead, TableBody, TableRow, TableCell,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { useTheme } from '@mui/material';
@@ -20,15 +21,21 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 import SportsOutlinedIcon from '@mui/icons-material/SportsOutlined';
-
-const SPORT_TYPES = [
-    { id: 1, name: 'Cầu lông' }, { id: 2, name: 'Tennis' },
-    { id: 3, name: 'Bóng đá'  }, { id: 4, name: 'Bóng rổ' },
-    { id: 5, name: 'Bóng chuyền' }, { id: 6, name: 'Bơi lội' },
-];
+import PriceChangeOutlinedIcon from '@mui/icons-material/PriceChangeOutlined';
 
 const STATUS_LABEL = { Active: 'Hoạt động', Maintenance: 'Bảo trì', Inactive: 'Vô hiệu' };
 const STATUS_COLOR = { Active: 'success',   Maintenance: 'warning',  Inactive: 'default' };
+
+const DAY_OPTIONS = [
+    { value: '', label: 'Tất cả các ngày' },
+    { value: 1, label: 'Thứ 2' }, { value: 2, label: 'Thứ 3' },
+    { value: 3, label: 'Thứ 4' }, { value: 4, label: 'Thứ 5' },
+    { value: 5, label: 'Thứ 6' }, { value: 6, label: 'Thứ 7' },
+    { value: 0, label: 'Chủ nhật' },
+];
+const dayLabel = (d) => (d === null || d === undefined) ? 'Tất cả các ngày'
+    : DAY_OPTIONS.find(o => o.value === d)?.label ?? 'Tất cả các ngày';
+const blankPricingForm = { dayOfWeek: '', startTime: '', endTime: '', price: '', label: '', isActive: true };
 
 const SectionLabel = ({ children }) => (
     <Typography
@@ -52,6 +59,7 @@ const Court = () => {
 
     const [rows, setRows]       = useState([]);
     const [branches, setBranches] = useState([]);
+    const [sportTypes, setSportTypes] = useState([]);
     const [openEdit, setOpenEdit] = useState(false);
     const [openAdd,  setOpenAdd]  = useState(false);
     const [selected, setSelected] = useState(null);
@@ -59,8 +67,17 @@ const Court = () => {
     const [uploading, setUploading] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState(null);
     const [deleting, setDeleting] = useState(false);
+    const [newFacility, setNewFacility] = useState('');
+    const [savingFacility, setSavingFacility] = useState(false);
 
-    const blankForm = { name: '', branchId: '', sportTypeId: 1, description: '', basePrice: '' };
+    const [openPricing, setOpenPricing] = useState(false);
+    const [pricingCourt, setPricingCourt] = useState(null);
+    const [pricingRules, setPricingRules] = useState([]);
+    const [pricingForm, setPricingForm] = useState(blankPricingForm);
+    const [editingRuleId, setEditingRuleId] = useState(null);
+    const [savingRule, setSavingRule] = useState(false);
+
+    const blankForm = { name: '', branchId: '', sportTypeId: '', description: '', basePrice: '' };
     const [form, setForm] = useState(blankForm);
 
     const dgSx = {
@@ -101,13 +118,15 @@ const Court = () => {
 
     const fetchData = async () => {
         try {
-            const [ctRes, brRes] = await Promise.all([
+            const [ctRes, brRes, stRes] = await Promise.all([
                 fetchWithAuth(`${API_BASE}/courts/manage`),
                 fetchWithAuth(`${API_BASE}/branches/manage`),
+                fetchWithAuth(`${API_BASE}/sport-types`),
             ]);
-            const [courts, brs] = await Promise.all([ctRes.json(), brRes.json()]);
+            const [courts, brs, sts] = await Promise.all([ctRes.json(), brRes.json(), stRes.json()]);
             setRows(courts.map((c, i) => ({ ...c, id: c.courtId, stt: i + 1 })));
             setBranches(brs);
+            setSportTypes(sts);
         } catch (e) { console.error(e); }
     };
 
@@ -162,7 +181,8 @@ const Court = () => {
     };
 
     const handleAdd = async () => {
-        if (!form.branchId) { toast.warning('Vui lòng chọn chi nhánh.'); return; }
+        if (!form.branchId)    { toast.warning('Vui lòng chọn chi nhánh.'); return; }
+        if (!form.sportTypeId) { toast.warning('Vui lòng chọn môn thể thao.'); return; }
         if (!form.name)     { toast.warning('Vui lòng nhập tên sân.'); return; }
         if (!form.basePrice || parseFloat(form.basePrice) <= 0) {
             toast.warning('Giá phải lớn hơn 0.'); return;
@@ -185,6 +205,106 @@ const Court = () => {
             setOpenAdd(false); setForm(blankForm); setImgFiles([]);
             fetchData();
         } catch { setUploading(false); toast.error('Lỗi kết nối.'); }
+    };
+
+    const handleAddFacility = async () => {
+        if (!selected || !newFacility.trim()) return;
+        setSavingFacility(true);
+        try {
+            const res = await fetchWithAuth(`${API_BASE}/courts/${selected.courtId}/facilities`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: newFacility.trim(), icon: null }),
+            });
+            if (!res.ok) { await showError(res, 'Thêm tiện ích thất bại.'); return; }
+            const created = await res.json();
+            setSelected(p => ({ ...p, facilities: [...(p.facilities || []), created] }));
+            setNewFacility('');
+            fetchData();
+        } catch { toast.error('Lỗi kết nối.'); }
+        finally { setSavingFacility(false); }
+    };
+
+    const handleRemoveFacility = async (facilityId) => {
+        if (!selected) return;
+        try {
+            const res = await fetchWithAuth(
+                `${API_BASE}/courts/${selected.courtId}/facilities/${facilityId}`, { method: 'DELETE' });
+            if (!res.ok) { await showError(res, 'Xóa tiện ích thất bại.'); return; }
+            setSelected(p => ({
+                ...p, facilities: (p.facilities || []).filter(f => f.courtFacilityId !== facilityId),
+            }));
+            fetchData();
+        } catch { toast.error('Lỗi kết nối.'); }
+    };
+
+    const fetchPricingRules = async (courtId) => {
+        try {
+            const res = await fetchWithAuth(`${API_BASE}/courts/${courtId}/pricing-rules`);
+            if (!res.ok) return;
+            setPricingRules(await res.json());
+        } catch (e) { console.error(e); }
+    };
+
+    const openPricingDialog = (row) => {
+        setPricingCourt(row);
+        setPricingForm(blankPricingForm);
+        setEditingRuleId(null);
+        fetchPricingRules(row.courtId);
+        setOpenPricing(true);
+    };
+
+    const startEditRule = (rule) => {
+        setEditingRuleId(rule.ruleId);
+        setPricingForm({
+            dayOfWeek: rule.dayOfWeek ?? '',
+            startTime: rule.startTime?.slice(0, 5) || '',
+            endTime:   rule.endTime?.slice(0, 5) || '',
+            price:     rule.price,
+            label:     rule.label || '',
+            isActive:  rule.isActive,
+        });
+    };
+
+    const handleSavePricingRule = async () => {
+        if (!pricingCourt) return;
+        if (!pricingForm.startTime || !pricingForm.endTime) { toast.warning('Vui lòng chọn giờ bắt đầu/kết thúc.'); return; }
+        if (!pricingForm.price || parseFloat(pricingForm.price) <= 0) { toast.warning('Giá phải lớn hơn 0.'); return; }
+        setSavingRule(true);
+        try {
+            const body = {
+                dayOfWeek: pricingForm.dayOfWeek === '' ? null : parseInt(pricingForm.dayOfWeek, 10),
+                startTime: `${pricingForm.startTime}:00`,
+                endTime:   `${pricingForm.endTime}:00`,
+                price:     parseFloat(pricingForm.price),
+                label:     pricingForm.label || null,
+                isActive:  pricingForm.isActive,
+            };
+            const url = editingRuleId
+                ? `${API_BASE}/courts/${pricingCourt.courtId}/pricing-rules/${editingRuleId}`
+                : `${API_BASE}/courts/${pricingCourt.courtId}/pricing-rules`;
+            const res = await fetchWithAuth(url, {
+                method: editingRuleId ? 'PUT' : 'POST',
+                headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+            });
+            if (!res.ok) { await showError(res, 'Lưu quy tắc giá thất bại.'); return; }
+            toast.success(editingRuleId ? 'Đã cập nhật quy tắc giá.' : 'Đã thêm quy tắc giá.');
+            setPricingForm(blankPricingForm);
+            setEditingRuleId(null);
+            fetchPricingRules(pricingCourt.courtId);
+        } catch { toast.error('Lỗi kết nối.'); }
+        finally { setSavingRule(false); }
+    };
+
+    const handleDeletePricingRule = async (ruleId) => {
+        if (!pricingCourt) return;
+        try {
+            const res = await fetchWithAuth(
+                `${API_BASE}/courts/${pricingCourt.courtId}/pricing-rules/${ruleId}`, { method: 'DELETE' });
+            if (!res.ok) { await showError(res, 'Xóa quy tắc giá thất bại.'); return; }
+            toast.success('Đã xóa quy tắc giá.');
+            if (editingRuleId === ruleId) { setEditingRuleId(null); setPricingForm(blankPricingForm); }
+            fetchPricingRules(pricingCourt.courtId);
+        } catch { toast.error('Lỗi kết nối.'); }
     };
 
     const handleStatusToggle = async (row) => {
@@ -244,7 +364,7 @@ const Court = () => {
             ),
         },
         {
-            field: 'actions', headerName: '', width: canEdit ? 260 : 100, sortable: false,
+            field: 'actions', headerName: '', width: canEdit ? 300 : 100, sortable: false,
             renderCell: ({ row }) => (
                 <Box display="flex" gap={0.5} alignItems="center" height="100%">
                     {canStatus && (
@@ -258,9 +378,15 @@ const Court = () => {
                     {canEdit && (
                         <Button size="small" startIcon={<EditOutlinedIcon />}
                             sx={{ textTransform: 'none' }}
-                            onClick={() => { setSelected({ ...row }); setImgFiles([]); setOpenEdit(true); }}>
+                            onClick={() => { setSelected({ ...row }); setImgFiles([]); setNewFacility(''); setOpenEdit(true); }}>
                             Sửa
                         </Button>
+                    )}
+                    {canEdit && (
+                        <IconButton size="small" title="Giá theo giờ"
+                            onClick={() => openPricingDialog(row)}>
+                            <PriceChangeOutlinedIcon fontSize="small" />
+                        </IconButton>
                     )}
                     {canEdit && row.status !== 'Inactive' && (
                         <Button size="small" color="error" startIcon={<DeleteOutlineIcon />}
@@ -367,6 +493,28 @@ const Court = () => {
                                 </Box>
                             )}
                             <ImgPickerBtn label="Chọn ảnh mới" />
+
+                            <Divider sx={{ my: 2 }} />
+                            <SectionLabel>Tiện ích</SectionLabel>
+                            <Box display="flex" flexWrap="wrap" gap={1} sx={{ mb: 1.5 }}>
+                                {(selected.facilities || []).length === 0 && (
+                                    <Typography variant="body2" color="text.secondary">Chưa có tiện ích nào.</Typography>
+                                )}
+                                {(selected.facilities || []).map(f => (
+                                    <Chip key={f.courtFacilityId} label={f.name} size="small"
+                                        onDelete={() => handleRemoveFacility(f.courtFacilityId)} />
+                                ))}
+                            </Box>
+                            <Box display="flex" gap={1}>
+                                <TextField size="small" fullWidth placeholder="Ví dụ: Bãi đỗ xe, Phòng thay đồ..."
+                                    value={newFacility}
+                                    onChange={e => setNewFacility(e.target.value)}
+                                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddFacility(); } }} />
+                                <Button variant="outlined" size="small" disabled={savingFacility || !newFacility.trim()}
+                                    onClick={handleAddFacility} sx={{ textTransform: 'none', whiteSpace: 'nowrap' }}>
+                                    Thêm
+                                </Button>
+                            </Box>
                         </Box>
                     )}
                 </DialogContent>
@@ -412,8 +560,8 @@ const Court = () => {
                                         <InputLabel>Môn thể thao</InputLabel>
                                         <Select value={form.sportTypeId} label="Môn thể thao"
                                             onChange={e => setForm(p => ({ ...p, sportTypeId: e.target.value }))}>
-                                            {SPORT_TYPES.map(s => (
-                                                <MenuItem key={s.id} value={s.id}>{s.name}</MenuItem>
+                                            {sportTypes.map(s => (
+                                                <MenuItem key={s.sportTypeId} value={s.sportTypeId}>{s.name}</MenuItem>
                                             ))}
                                         </Select>
                                     </FormControl>
@@ -438,6 +586,122 @@ const Court = () => {
                         sx={{ textTransform: 'none', fontWeight: 600, minWidth: 90 }}>
                         {uploading ? 'Đang tải...' : 'Thêm sân'}
                     </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Pricing rules dialog */}
+            <Dialog open={openPricing} onClose={() => setOpenPricing(false)} maxWidth="sm" fullWidth
+                PaperProps={{ sx: { borderRadius: 2 } }}>
+                <DialogTitle sx={dlgTitleSx}>
+                    <Typography fontWeight={700} fontSize={17}>
+                        Giá theo giờ — {pricingCourt?.name}
+                    </Typography>
+                    <IconButton size="small" onClick={() => setOpenPricing(false)} sx={{ color: 'inherit' }}>
+                        <CloseOutlinedIcon fontSize="small" />
+                    </IconButton>
+                </DialogTitle>
+                <DialogContent dividers sx={{ px: 3, py: 2 }}>
+                    <SectionLabel>Quy tắc hiện có</SectionLabel>
+                    {pricingRules.length === 0 ? (
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                            Chưa có quy tắc giá nào. Sân sẽ dùng giá mặc định ở mọi thời điểm.
+                        </Typography>
+                    ) : (
+                        <Table size="small" sx={{ mb: 2.5 }}>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>Ngày</TableCell>
+                                    <TableCell>Giờ</TableCell>
+                                    <TableCell>Giá</TableCell>
+                                    <TableCell>Nhãn</TableCell>
+                                    <TableCell align="center">Bật</TableCell>
+                                    <TableCell align="right"></TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {pricingRules.map(r => (
+                                    <TableRow key={r.ruleId}>
+                                        <TableCell>{dayLabel(r.dayOfWeek)}</TableCell>
+                                        <TableCell>{r.startTime?.slice(0, 5)}–{r.endTime?.slice(0, 5)}</TableCell>
+                                        <TableCell>{Number(r.price).toLocaleString('vi-VN')}đ</TableCell>
+                                        <TableCell>{r.label || '—'}</TableCell>
+                                        <TableCell align="center">{r.isActive ? '✓' : '—'}</TableCell>
+                                        <TableCell align="right">
+                                            <IconButton size="small" onClick={() => startEditRule(r)}>
+                                                <EditOutlinedIcon fontSize="small" />
+                                            </IconButton>
+                                            <IconButton size="small" color="error" onClick={() => handleDeletePricingRule(r.ruleId)}>
+                                                <DeleteOutlineIcon fontSize="small" />
+                                            </IconButton>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    )}
+
+                    <Divider sx={{ mb: 2 }} />
+                    <SectionLabel>{editingRuleId ? 'Sửa quy tắc' : 'Thêm quy tắc mới'}</SectionLabel>
+                    <Stack spacing={1.5}>
+                        <Grid container spacing={1.5}>
+                            <Grid item xs={6}>
+                                <FormControl fullWidth size="small">
+                                    <InputLabel>Ngày áp dụng</InputLabel>
+                                    <Select value={pricingForm.dayOfWeek} label="Ngày áp dụng"
+                                        onChange={e => setPricingForm(p => ({ ...p, dayOfWeek: e.target.value }))}>
+                                        {DAY_OPTIONS.map(d => (
+                                            <MenuItem key={d.label} value={d.value}>{d.label}</MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+                            <Grid item xs={3}>
+                                <TextField label="Từ" size="small" fullWidth type="time"
+                                    InputLabelProps={{ shrink: true }}
+                                    value={pricingForm.startTime}
+                                    onChange={e => setPricingForm(p => ({ ...p, startTime: e.target.value }))} />
+                            </Grid>
+                            <Grid item xs={3}>
+                                <TextField label="Đến" size="small" fullWidth type="time"
+                                    InputLabelProps={{ shrink: true }}
+                                    value={pricingForm.endTime}
+                                    onChange={e => setPricingForm(p => ({ ...p, endTime: e.target.value }))} />
+                            </Grid>
+                        </Grid>
+                        <Grid container spacing={1.5}>
+                            <Grid item xs={6}>
+                                <TextField label="Giá (VNĐ) *" size="small" fullWidth type="number"
+                                    value={pricingForm.price}
+                                    onChange={e => setPricingForm(p => ({ ...p, price: e.target.value }))} />
+                            </Grid>
+                            <Grid item xs={6}>
+                                <TextField label="Nhãn (VD: Giờ vàng)" size="small" fullWidth
+                                    value={pricingForm.label}
+                                    onChange={e => setPricingForm(p => ({ ...p, label: e.target.value }))} />
+                            </Grid>
+                        </Grid>
+                        <Box display="flex" alignItems="center" justifyContent="space-between">
+                            <FormControlLabel
+                                control={<Switch checked={pricingForm.isActive}
+                                    onChange={e => setPricingForm(p => ({ ...p, isActive: e.target.checked }))} />}
+                                label="Áp dụng ngay" />
+                            <Box display="flex" gap={1}>
+                                {editingRuleId && (
+                                    <Button size="small" onClick={() => { setEditingRuleId(null); setPricingForm(blankPricingForm); }}
+                                        sx={{ textTransform: 'none' }}>
+                                        Hủy sửa
+                                    </Button>
+                                )}
+                                <Button variant="contained" size="small" onClick={handleSavePricingRule} disabled={savingRule}
+                                    sx={{ textTransform: 'none', fontWeight: 600 }}>
+                                    {editingRuleId ? 'Cập nhật' : 'Thêm quy tắc'}
+                                </Button>
+                            </Box>
+                        </Box>
+                    </Stack>
+                </DialogContent>
+                <DialogActions sx={{ px: 3, py: 1.5 }}>
+                    <Button onClick={() => setOpenPricing(false)} sx={{ textTransform: 'none' }}>Đóng</Button>
                 </DialogActions>
             </Dialog>
 
