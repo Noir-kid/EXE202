@@ -92,18 +92,20 @@ class _BookingScreenState extends State<BookingScreen> {
     if (userId == null || court == null) return;
     setState(() => _submitting = true);
     try {
-      await widget.api.createBooking(
+      final booking = await widget.api.createBooking(
         userId: userId,
         courtId: court.id,
         date: _date,
         start: _start,
         end: _end,
       );
+      final paymentUrl = await widget.api.createPayOSPaymentUrl(bookingId: booking.id);
+      await widget.api.openPaymentUrl(paymentUrl);
       await session.refreshUser();
       await _loadSlots(court);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Booking created successfully.')),
+        const SnackBar(content: Text('PayOS checkout opened. Complete payment to confirm your booking.')),
       );
     } catch (error) {
       if (!mounted) return;

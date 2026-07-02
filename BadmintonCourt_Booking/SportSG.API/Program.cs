@@ -99,7 +99,7 @@ try
     builder.Services.AddScoped<BookingExpiryJob>();
     builder.Services.AddScoped<BookingReminderJob>();
 
-    // ── HTTP Client (Google OAuth + MoMo API) ────────────────────
+    // ── HTTP Client (Google OAuth + payment gateways) ────────────
     builder.Services.AddHttpClient();
     builder.Services.AddHttpClient("Google", c =>
     {

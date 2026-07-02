@@ -7,7 +7,7 @@ public class PaymentLog
 {
     public long PaymentLogId { get; set; }
     public Guid? PaymentId { get; set; }
-    public PaymentGateway Gateway { get; set; }         // VNPay, MoMo
+    public PaymentGateway Gateway { get; set; }         // VNPay, MoMo, PayOS
     public string Direction { get; set; } = null!;      // REQUEST, CALLBACK, WEBHOOK
     public string? RawRequest { get; set; }             // JSON
     public string? RawResponse { get; set; }            // JSON

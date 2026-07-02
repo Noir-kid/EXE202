@@ -174,7 +174,7 @@ CREATE TABLE Payments (
     BookingId       UNIQUEIDENTIFIER NOT NULL REFERENCES Bookings(BookingId),
     UserId          UNIQUEIDENTIFIER NOT NULL REFERENCES Users(UserId),
     Amount          DECIMAL(10,2)    NOT NULL,
-    Method          VARCHAR(20)      NOT NULL, -- MoMo|VNPay|Cash|Wallet
+    Method          VARCHAR(20)      NOT NULL, -- MoMo|VNPay|PayOS|Cash|Wallet
     Status          VARCHAR(20)      NOT NULL DEFAULT 'Pending', -- Pending|Success|Failed|Refunded
     TransactionRef  VARCHAR(100),              -- gateway reference
     GatewayResponse NVARCHAR(2000),

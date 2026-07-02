@@ -239,7 +239,9 @@ class _PaymentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final momo = payment.method == 2;
+    final isMomo = payment.method == 2;
+    final isPayOS = payment.method == 5;
+    final label = isPayOS ? 'PayOS' : (isMomo ? 'MoMo' : 'VNPay');
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -255,10 +257,10 @@ class _PaymentCard extends StatelessWidget {
       ),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: momo ? const Color(0xFFFEEAD5) : const Color(0xFFE8F5F1),
+          backgroundColor: isMomo ? const Color(0xFFFEEAD5) : const Color(0xFFE8F5F1),
           child: Icon(
-            momo ? Icons.account_balance_wallet : Icons.payments_outlined,
-            color: momo ? const Color(0xFFF97316) : const Color(0xFF003527),
+            isMomo ? Icons.account_balance_wallet : Icons.payments_outlined,
+            color: isMomo ? const Color(0xFFF97316) : const Color(0xFF003527),
           ),
         ),
         title: Text(
@@ -268,7 +270,7 @@ class _PaymentCard extends StatelessWidget {
         subtitle: Text(
           '${formatDateTime(payment.date)}\nTransaction: ${payment.transactionId}',
         ),
-        trailing: _PaymentTypePill(label: momo ? 'MoMo' : 'VNPay'),
+        trailing: _PaymentTypePill(label: label),
       ),
     );
   }

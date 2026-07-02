@@ -56,6 +56,7 @@ int _readPaymentMethod(Map<String, dynamic> json) {
     'vnpay' => 1,
     'cash' => 3,
     'wallet' => 4,
+    'payos' => 5,
     _ => 0,
   };
 }

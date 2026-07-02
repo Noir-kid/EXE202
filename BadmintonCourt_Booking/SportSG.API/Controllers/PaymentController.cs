@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 using SportSG.API.Extensions;
 using SportSG.Application.Interfaces;
 using SportSG.Domain.Entities;
@@ -69,7 +70,7 @@ public class PaymentController(
     // ── Tạo Payment + lấy URL thanh toán ────────────────────────
 
     /// <summary>
-    /// Khởi tạo thanh toán online (VNPay/MoMo).
+    /// Khởi tạo thanh toán online (VNPay/MoMo/PayOS).
     /// Trả về paymentUrl để redirect người dùng.
     /// </summary>
     [HttpPost("initiate")]
@@ -240,30 +241,16 @@ public class PaymentController(
     /// </summary>
     [HttpPost("payos/callback")]
     [AllowAnonymous]
-    public async Task<IActionResult> PayOSCallback([FromBody] System.Text.Json.JsonElement payload, CancellationToken ct)
+    public Task<IActionResult> PayOSCallback([FromBody] JsonElement payload, CancellationToken ct)
     {
-        var rawJson = payload.GetRawText();
-        logger.LogInformation("PayOS webhook received: {Payload}", rawJson);
+        return HandlePayOSWebhookAsync(payload, ct);
+    }
 
-        PaymentVerifyResult verify;
-        try
-        {
-            verify = await payOs.VerifyCallbackAsync(new PaymentCallback(rawJson, ""), ct);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "PayOS verify error");
-            return Ok(new { success = false });
-        }
-
-        if (!verify.IsValid)
-        {
-            logger.LogWarning("PayOS signature invalid. OrderCode:{OrderCode}", verify.TransactionId);
-            return Ok(new { success = false });
-        }
-
-        var confirmed = await ConfirmPayOSByOrderCodeAsync(verify.TransactionId, verify.Amount, ct);
-        return Ok(new { success = confirmed });
+    [HttpPost("payos/webhook")]
+    [AllowAnonymous]
+    public Task<IActionResult> PayOSWebhook([FromBody] JsonElement payload, CancellationToken ct)
+    {
+        return HandlePayOSWebhookAsync(payload, ct);
     }
 
     /// <summary>
@@ -295,6 +282,45 @@ public class PaymentController(
 
         var confirmed = await ConfirmPayOSByOrderCodeAsync(orderCode, verify.Amount, ct);
         return Ok(new { success = confirmed, amount = verify.Amount });
+    }
+
+    /// <summary>
+    /// Browser return/cancel endpoint for PayOS.
+    /// </summary>
+    [HttpGet("payos/callback")]
+    [AllowAnonymous]
+    public IActionResult PayOSCallback()
+    {
+        return Ok(new
+        {
+            message = "PayOS callback received. Please return to the app and refresh your booking history."
+        });
+    }
+
+    private async Task<IActionResult> HandlePayOSWebhookAsync(JsonElement payload, CancellationToken ct)
+    {
+        var rawJson = payload.GetRawText();
+        logger.LogInformation("PayOS webhook received: {Payload}", rawJson);
+
+        PaymentVerifyResult verify;
+        try
+        {
+            verify = await payOs.VerifyCallbackAsync(new PaymentCallback(rawJson, ""), ct);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "PayOS verify error");
+            return Ok(new { success = false, message = "Error" });
+        }
+
+        if (!verify.IsValid)
+        {
+            logger.LogWarning("PayOS signature invalid. OrderCode:{OrderCode}", verify.TransactionId);
+            return Ok(new { success = false, message = "Invalid signature" });
+        }
+
+        var confirmed = await ConfirmPayOSByOrderCodeAsync(verify.TransactionId, verify.Amount, ct);
+        return Ok(new { success = confirmed, message = confirmed ? "OK" : "Payment not found" });
     }
 
     /// <summary>

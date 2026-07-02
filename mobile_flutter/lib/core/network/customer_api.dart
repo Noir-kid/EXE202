@@ -7,6 +7,7 @@ import '../../shared/models/feedback_item.dart';
 import '../../shared/models/payment.dart';
 import '../../shared/models/slot.dart';
 import '../../shared/models/user.dart';
+import '../config/api_config.dart';
 import 'api_client.dart';
 
 class CustomerApi {
@@ -43,14 +44,14 @@ class CustomerApi {
         .toList();
   }
 
-  Future<void> createBooking({
+  Future<Booking> createBooking({
     required String userId,
     required String courtId,
     required DateTime date,
     required int start,
     required int end,
   }) async {
-    await _client.dio.post(
+    final response = await _client.dio.post<Map<String, dynamic>>(
       '/api/bookings',
       data: {
         'courtId': courtId,
@@ -61,6 +62,23 @@ class CustomerApi {
         'promoCode': null,
       },
     );
+    return Booking.fromJson(response.data ?? {});
+  }
+
+  Future<Uri> createPayOSPaymentUrl({required String bookingId}) async {
+    final response = await _client.dio.post<Map<String, dynamic>>(
+      '/api/payments/initiate',
+      data: {
+        'bookingId': bookingId,
+        'method': 'PayOS',
+        'returnUrl': '${ApiConfig.baseUrl}/api/payments/payos/callback',
+      },
+    );
+    final paymentUrl = response.data?['paymentUrl']?.toString();
+    if (paymentUrl == null || paymentUrl.isEmpty) {
+      throw Exception('Backend không trả về PayOS payment URL.');
+    }
+    return Uri.parse(paymentUrl);
   }
 
   Future<List<Booking>> getBookings(String userId) async {

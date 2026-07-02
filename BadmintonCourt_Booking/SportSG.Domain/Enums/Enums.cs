@@ -11,7 +11,7 @@ public enum LoyaltyType     { Earn, Redeem, Expire, Bonus }
 public enum NotificationType{ Info, Booking, Payment, System }
 public enum MaintenanceStatus { Scheduled, InProgress, Done, Cancelled }
 public enum MembershipStatus  { Active, Expired, Cancelled }
-public enum PaymentGateway    { VNPay, MoMo }
+public enum PaymentGateway    { VNPay, MoMo, PayOS }
 public enum BannerPosition    { Home, Search, Checkout }
 public enum NotificationChannel { InApp, Email, Push, SMS }
 public enum ReportType        { Revenue, Booking, CourtUtilization, PeakHour, TopCourt, TopCustomer }
